@@ -27,11 +27,11 @@ The data will be extracted from various sources and added to the COVID-19 US Spa
 
 ## Responsibilities
 **Priyanka**: Research & data collection<br/>
-**Noah**: Research & data collection <br/>
+**Noah**: Research & data automation (ingestion)<br/>
 **Priscilla**: Research & analysis<br/>
 **Max**: Research & analysis<br/>
 
 ## Timeline
-- **Week 1**: Identify data sources
-- **Week 2**: Write scripts to extract data
-- **Week 3**: Analyze data
+- **Week 1**: Identify data sources, investigate methods, create plan
+- **Week 2**: Write scripts to extract data, QA/QC data 
+- **Week 3**: Analyze/vizualize data and combine data into unifed COVID-19 accessible data base
