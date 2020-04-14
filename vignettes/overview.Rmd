@@ -25,6 +25,9 @@ Compile and analyze COVID-19 related spatial interventions in the U.S. at the co
 ## Data
 The data will be extracted from various sources and added to the COVID-19 US Spatial Response database. We are currently looking into putting together a list of verified twitter accounts for US counties. 
 
+## Methods
+The data will be ingested through automated twitter scarrping using exisitng packages in R. The data will then be analyzed using R packages and then complied into a accsiblibe database with existing data from a ongoing invesgation at Arizona State University.
+
 ## Responsibilities
 **Priyanka**: Research & data collection<br/>
 **Noah**: Research & data automation (ingestion)<br/>
