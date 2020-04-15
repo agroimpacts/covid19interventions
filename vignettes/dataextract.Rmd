@@ -35,8 +35,17 @@ order <- xml2::read_html("https://www.governor.ny.gov/news/governor-cuomo-issues
 order_txt <- order %>%
   html_node("div.content") %>%
   html_text()
+```
 
-# data cleanup
+## PDF Extraction Method
+```{r}
+# order in PDF format
+pdf_file <- "https://www.como.gov/wp-content/uploads/Special-Order-2020-03-Stay-at-Home-Order-Issued-3-24-2020-FAQ-2.pdf"
+order_txt <- pdf_text(pdf_file)
+```
+
+## Data Cleanup & Formatting
+```{r}
 order_txt <- unlist(strsplit(order_txt,"[ \t\r\n\\,\\.]"))
 order_txt <- order_txt[order_txt != ""]
 
@@ -45,16 +54,6 @@ order_tbl <- as.data.frame(order_txt)
 names(order_tbl) <- "word"
 ```
 
-## PDF Extraction Method
-```{r}
-pdf_file <- "https://www.como.gov/wp-content/uploads/Special-Order-2020-03-Stay-at-Home-Order-Issued-3-24-2020-FAQ-2.pdf"
-pdf_txt <- pdf_text(pdf_file)
-
-order_txt <- unlist(strsplit(pdf_txt,"[ \t\r\n\\,\\.]"))
-order_txt <- order_txt[order_txt != ""]
-order_tbl <- as.data.frame(order_txt)
-names(order_tbl) <- "word"
-```
 
 ## Bigram Creation using tidytext
 ```{r}
