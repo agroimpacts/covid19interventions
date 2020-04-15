@@ -30,9 +30,16 @@ The data will be extracted from various sources and added to the COVID-19 US Spa
 
 **Noah**: Research & data automation (ingestion) with Twitter data. Exploring TwitteR package to compile a list of verified accounts for counties or public health departments.<br/>
 
-**Priscilla**: Research & analysis<br/>
+**Priscilla**: Research & analysis. Building database for Twitter scraping. <br/>
 
-**Max**: Research & analysis<br/>
+**Max**: Research & analysis. Building interventions database for MA. <br/>
+
+First round of Qs:
+- What interventions are happening the most among state counties? Of the interventions, which are successful in flattening curve?
+- How have the date of interventions affected the curve?
+- How have different political parties responded in terms of time, intervention type, and location?
+- Observe Mask intervention effects on the curve
+- Which states observe the strictest policies<br/>
 
 ## Timeline
 - **Week 1**: Identify data sources, investigate methods, create plan
