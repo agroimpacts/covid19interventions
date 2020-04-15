@@ -3,22 +3,23 @@ Title: Package for a COVID-19 related spatial interventions database for the U.S
 Version: 0.1
 Authors@R: 
     c(person(given = "Priyanka",
-           family = "Verma",
-           role = c("aut", "cre"),
-           email = "prverma@clarku.edu"), 
-           person(given = "Priscilla",
-           family = "Ahn",
-           role = c("aut", "cre"),
-           email = "pahn@clarku.edu"),
-           person(given = "Noah",
-           family = "Berkowitz",
-           role = c("aut", "cre"),
-           email = "nberkowitz@clarku.edu"),
-           person(given = "Maxwell",
-           family = "Enger",
-           role = c("aut", "cre"),
-           email = "menger@clarku.edu"))
-Description: The package compiles information from multiple sources at the county level for a COVID-19 related spatial interventions
+             family = "Verma",
+             role = c("aut", "cre"),
+             email = "prverma@clarku.edu"), 
+      person(given = "Priscilla",
+             family = "Ahn",
+             role = "ctb",
+             email = "pahn@clarku.edu"),
+      person(given = "Noah",
+             family = "Berkowitz",
+             role = "ctb",
+             email = "nberkowitz@clarku.edu"),
+      person(given = "Maxwell",
+             family = "Enger",
+             role = "ctb",
+             email = "menger@clarku.edu"))
+Description: The package compiles information from multiple sources at the 
+    county level for a COVID-19 related spatial interventions
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
