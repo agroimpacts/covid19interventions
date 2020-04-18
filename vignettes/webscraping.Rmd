@@ -1,0 +1,119 @@
+---
+title: "Web Scraoing in R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{webscraping}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE, include=FALSE}
+library(covid19interventions)
+library(dplyr)
+library(rvest)
+library(RSelenium)
+```
+
+
+## Using rvest
+```{r}
+# website with closures in Georgia
+schools <- xml2::read_html("https://www.wsbtv.com/weather/school-closings/")
+
+# identify elements to scrape
+td_tags <- c('td.name', 'td.county', 'td.date')
+closures_ = list()
+
+# the html_table way does not work because of description column for some rows
+# loop through multiple elements to scrape each column of interest
+for (i in td_tags){
+  closures_[[i]] = schools %>%
+  html_nodes(i) %>%
+  html_text()
+}
+
+# list to Dataframe converstion
+names(closures_) <- c('name','county','date')
+closures <- as.data.frame(closures_)
+
+# Format Date Columns
+closures$start_date = unlist(lapply(closures$date,function(x){
+  paste(unlist(strsplit(as.character(x)," "))[2:3],collapse = " ")}
+))
+closures$end_date = unlist(lapply(closures$date,function(x){
+  paste(unlist(strsplit(as.character(x)," "))[4:5],collapse = " ")}
+))
+
+# remove old date column 
+closures <- closures[,-3]
+# add state column
+closures$state <- 'Georgia'
+
+# assign types to each row based on UArizona codes
+closures$type <- ''
+closures$type =ifelse(grepl("School|Academy", closures$name, 
+                            fixed = FALSE),"Pub-school-closed",closures$type)
+closures$type =ifelse(grepl("Church", closures$name, 
+                            fixed = FALSE),"Churches-closed",closures$type)
+closures$type =ifelse(grepl("College|University", closures$name, 
+                            fixed = FALSE),"Uni-school-closed",closures$type)
+closures$type =ifelse(grepl("Government|City", closures$name, 
+                            fixed = FALSE),"Govt-fac-closed",closures$type)
+```
+
+
+## Selenium Way
+```{bash, eval=FALSE}
+# start Selenium Server
+# move exe to package for this to run
+source(java -jar selenium-server-standalone-3.9.1.jar)
+```
+
+```{r, eval=FALSE}
+# Selenium way
+library(RSelenium)
+# .jar file here: http://selenium-release.storage.googleapis.com/index.html?path=3.9/
+#URL with js-rendered content to be scraped
+driver<- rsDriver(browser=c("firefox"))
+remDr <- driver[["client"]]
+remDr$open()
+
+remDr$navigate("https://www.wsbtv.com/weather/school-closings/")
+
+# test
+# remDr$maxWindowSize()
+# remDr$screenshot(display = TRUE)
+
+# filter to county schools through search box
+searchbox <- remDr$findElement(using = "class name", 'filter-table')
+searchbox$sendKeysToElement(list("County Schools", key = "enter"))
+
+# close ad
+Sys.sleep(8)
+ad <- remDr$findElement(using = "class name", 'widget_fb_close')
+ad$clickElement()
+
+# columns to scrape
+scrape_col <- c('name','county','date')
+name_elmt <- remDr$findElements(using = "class name", 'name')
+county_elmt <- remDr$findElements(using = "class name", 'county')
+date_elmt <- remDr$findElements(using = "class name", 'date')
+
+# extract text form col
+name_scraped <- unlist(lapply(name_elmt, function(x){x$getElementText()}))
+county_scraped <- unlist(lapply(county_elmt, function(x){x$getElementText()}))
+date_scraped <- unlist(lapply(date_elmt, function(x){x$getElementText()}))
+
+# next page
+webElem<-remDr$findElement(using = "id", value = "page-selector-2")
+webElem$clickElement()
+
+# need to loop through functions earlier for each page..
+```
