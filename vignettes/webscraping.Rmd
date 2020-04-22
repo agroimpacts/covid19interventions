@@ -117,3 +117,44 @@ webElem$clickElement()
 
 # need to loop through functions earlier for each page..
 ```
+
+
+```{r}
+# Selenium way
+library(RSelenium)
+# .jar file here: http://selenium-release.storage.googleapis.com/index.html?path=3.9/
+#URL with js-rendered content to be scraped
+driver<- rsDriver(browser=c("firefox"))
+remDr <- driver[["client"]]
+remDr$open()
+
+remDr$navigate("https://www.unacast.com/covid19/social-distancing-scoreboard")
+
+# test
+# remDr$maxWindowSize()
+# remDr$screenshot(display = TRUE)
+
+# filter to county schools through search box
+#example script
+
+library(rvest)
+
+my_session <- html_session()
+
+library(rvest)
+library(stringr)
+
+#extract source as hown in the image above
+iframe_src <-  html_session('https://covid19-scoreboard.unacast.com/') %>%
+    html_node("iframe") %>%
+    html_attr("src")
+#get the url to that iframe
+iframe_url <- str_c("https://scrapethissite.com",iframe_src)
+#extract turtle names:
+turtle_names <- html_session(iframe_url) %>%
+    html_nodes("div.root") %>%
+    html_text()
+print(turtle_names)
+```
+
+
