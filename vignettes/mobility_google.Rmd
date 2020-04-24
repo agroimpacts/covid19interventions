@@ -52,10 +52,10 @@ mob_data %>%
   scale_x_date(date_minor_breaks = "1 day")
 ```
 
-# State/County Stay at Home 
+# State/County Stay at Home Dates from NYTimes
 ```{r}
-# website with sah orders
-schools <- xml2::read_html("https://www.nytimes.com/interactive/2020/us/coronavirus-stay-at-home-order.html")
+# website with stay at home/shelter in place orders
+url <- xml2::read_html("https://www.nytimes.com/interactive/2020/us/coronavirus-stay-at-home-order.html")
 
 # identify elements to scrape at the state level
 td_tags <- c('h3', 'p.l-order')
@@ -63,38 +63,64 @@ sah_ = list()
 
 # loop through multiple elements to scrape 
 for (i in td_tags){
-  sah_[[i]] = schools %>%
+  sah_[[i]] = url %>%
   html_nodes('div.state-wrap.statewide')  %>%
   html_nodes(i) %>% 
   html_text
 }
 
-# list to Dataframe converstion
+# list to Dataframe conversion
 names(sah_) <- c('state','order')
 sah <- as.data.frame(sah_)
+sah["county"] <- 'All'
 
+# States that did not implement a stay at home order
+# Pull the county level info with state attached
+no_sah <- html_nodes(url, "div.state-wrap ")
+for (section in no_sah) {
+  state <- html_nodes(section, "h3") %>% html_text
+  place <- html_nodes(section, "p.l-place") %>% html_text
+  order <- html_nodes(section, "p.l-order") %>% html_text
+  # counties under l-place class for every state
+  # if state has implemented SAH in one or more county
+  # extract county level SAH data
+  if (length(place) >= 1){
+    print(state)
+    print(unlist(order))
+    sah <- sah %>% add_row(state = state, order = order, county = place)
+  }
+}
 
 # Format state Column
-sah$state_name = unlist(lapply(sah$state,function(x){
+sah$state = unlist(lapply(sah$state,function(x){
   paste(unlist(strsplit(as.character(x)," About "))[1],collapse = " ")}
 ))
 
-# Format SAH Order column
-sah$SAH = unlist(lapply(sah$order,function(x){
-  paste(unlist(strsplit(as.character(x),"effective "))[2],collapse = "")}
+# Format county Column
+sah$county = unlist(lapply(sah$county,function(x){
+  paste(unlist(strsplit(as.character(x)," About "))[1],collapse = " ")}
+))
+
+# Format Order column
+sah$order_type = unlist(lapply(sah$order,function(x){
+  paste(unlist(strsplit(as.character(x),", effective "))[1],collapse = "")}
+))
+
+# split date-time
+sah$date_time = unlist(lapply(sah$order,function(x){
+  paste(unlist(strsplit(as.character(x),", effective "))[2],collapse = "")}
+))
+
+# time
+sah$time = unlist(lapply(sah$date,function(x){
+  paste(unlist(strsplit(as.character(x)," at "))[2],collapse = "")}
+))
+
+# date
+sah$date <- unlist(lapply(sah$date,function(x){
+  paste(unlist(strsplit(as.character(x)," at "))[1],collapse = "")}
 ))
 
 # filter columns
-sah <- sah[c("state_name", "SAH")]
-head(sah)
-
-# States that did not implement a stay at home order
-# Data at county level for these states
-# Code returns true if county level data exists
-schools %>%
-  html_nodes('div.state-wrap ') %>% 
-  html_node("p.l-place") %>% 
-  html_attr('class') %>% is.na %>% `!`
-
-# Figure out how to pull the county level info with the state info attached
+sah <- sah[c("state", "county", "order_type", "date", "time")]
 ```
