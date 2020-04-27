@@ -21,9 +21,10 @@ library(dplyr)
 library(ggplot2)
 library(tidyverse)
 library(readr)
+library(DT)
 ```
 
-# State/County Stay at Home Dates from NYTimes
+## State/County Stay at Home Dates from NYTimes
 ```{r}
 # website with stay at home/shelter in place orders
 url <- xml2::read_html("https://www.nytimes.com/interactive/2020/us/coronavirus-stay-at-home-order.html")
@@ -80,6 +81,7 @@ sah <- sah[c("state", "county", "order_type", "order_date", "time")]
 ```
 
 
+## Google Mobility Data
 - Find date of biggest drop in mobility by county using google data
 - Check if this happens before or after SAH order is implemented
 - If a big drop before SAH -> there may be some county level implementation (?)
@@ -89,16 +91,18 @@ mob_data <- read_csv("data/Global_Mobility_Report.csv")
 mob_data$date = as.Date(mob_data$date, format = '%m/%d/%Y')
 
 # filter data to county level data only
-mob_data_filtered <- mob_data %>% filter(!is.na(sub_region_2))
+mob_data_filtered <- mob_data %>% filter(!is.na(sub_region_2) & date > "2020-03-01")
 # state level sah only
-sah_filtered <- sah %>% filter(county == 'All')
-  
+sah_states <- sah %>% filter(county == 'All')
+sah_counties <- sah %>% filter(county != 'All')
+
 # join sah and google data
-df_joined <- inner_join(mob_data_filtered, sah_filtered, by=c('sub_region_1' = c('state')))
+df_joined <- inner_join(mob_data_filtered, sah_states, by=c('sub_region_1' = c('state')))
 
 # mobility change in NY County by type
 df_joined %>% 
-  filter(sub_region_1 == "New York" & sub_region_2 == "New York County" & date < order_date) %>%
+  filter(sub_region_1 == "Colorado" & sub_region_2 == "Boulder County" 
+         & date < order_date) %>%
   select("date","retail_and_recreation_percent_change_from_baseline",
         "grocery_and_pharmacy_percent_change_from_baseline",
         "parks_percent_change_from_baseline",
@@ -113,6 +117,49 @@ df_joined %>%
   theme_bw()+
   theme(axis.text.x = element_text(angle = 90), 
         legend.title = element_blank(),
-        legend.position="bottom")+
-  scale_x_date(date_minor_breaks = "1 day")
+        legend.position="bottom") +
+  scale_x_date(date_breaks = "1 day")
 ```
+
+
+# Decrease in Mobility
+Narrow Down Counties that may have had a local Stay-at-Home order before State
+- Check decrease in mobility for every county after state SAH implemented
+If there is a decrease in numbers close to what was seen after state level stay-at-home in the days before, the county may have had a local stay-at-home order in place.
+- Exclude day before state-level SAH implementation from analysis?
+```{r}
+# get mobility for the day after state order_date
+# not sure why -1 works and not +1 to get next day
+state_mob <- df_joined %>% filter(order_date == date-1) %>% 
+  select(c(3:4,10))
+
+# join drop after state SAH to original data
+local_mob <- merge(df_joined,state_mob, by = c("sub_region_1","sub_region_2"))
+
+# for every county, filter to dates before state stay-at-home
+# for every county- calculate highest drop in workplaces (min)
+# filter counties where there was a higher drop before state stay-at-home
+# if there are ties in workplace for a county- pick earliest date
+# order_date = state stay-at-home order date
+# drop_date = date of biggest drop before 
+# county_wp_drop = % workplace drop from baseline on drop_date
+# state_wp_drop = % workplace drop from baseline on order_date
+county_state_mob <- local_mob %>% 
+  group_by(sub_region_1, sub_region_2, date) %>% 
+  filter(date < order_date) %>% 
+  mutate(county_wp_drop = min(workplaces_percent_change_from_baseline.x)) %>% 
+  filter(county_wp_drop < workplaces_percent_change_from_baseline.y) %>% 
+  group_by(sub_region_1, sub_region_2, order_date) %>% 
+  summarise(drop_date = min(date), 
+            county_wp_drop = min(county_wp_drop),
+            state_wp_drop = min(workplaces_percent_change_from_baseline.y)) %>% 
+  arrange(county_wp_drop)
+# days_between = days between order_date and drop_date
+county_state_mob$days_between <- county_state_mob$order_date - 
+  county_state_mob$drop_date
+```
+
+```{r}
+datatable(county_state_mob)
+```
+
