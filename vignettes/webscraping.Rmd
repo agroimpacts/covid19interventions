@@ -23,7 +23,7 @@ library(RSelenium)
 
 
 ## Using rvest
-```{r}
+```{r, eval=FALSE}
 # website with closures in Georgia
 schools <- xml2::read_html("https://www.wsbtv.com/weather/school-closings/")
 
@@ -119,7 +119,7 @@ webElem$clickElement()
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 # Selenium way
 library(RSelenium)
 # .jar file here: http://selenium-release.storage.googleapis.com/index.html?path=3.9/

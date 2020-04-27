@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, echo=FALSE, include=FALSE}
+```{r setup, warning=FALSE, include=TRUE, message=FALSE}
 library(covid19interventions)
 library(rvest)
 library(dplyr)
@@ -26,7 +26,7 @@ library(DT)
 
 ## State/County Stay at Home Dates from NYTimes
 ```{r}
-# website with stay at home/shelter in place orders
+# website with stay at home/shelter in orders
 url <- xml2::read_html("https://www.nytimes.com/interactive/2020/us/coronavirus-stay-at-home-order.html")
 
 # identify elements to scrape at the state level
@@ -51,6 +51,7 @@ sah["county"] <- 'All'
 no_sah <- html_nodes(url, "div.state-wrap ")
 for (section in no_sah) {
   state <- html_nodes(section, "h3") %>% html_text
+  place <- html_nodes(section, "p.l-place") %>% html_text
   order <- html_nodes(section, "p.l-order") %>% html_text
   # counties under l-place class for every state
   # if state has implemented SAH in one or more county
@@ -86,7 +87,7 @@ sah <- sah[c("state", "county", "order_type", "order_date", "time")]
 - If a big drop before SAH -> there may be some county level implementation (?)
 ```{r, fig.align='center', fig.width=8, fig.height=5}
 # global dataset
-mob_data <- read_csv("./data/Global_Mobility_Report.csv")
+mob_data <- read_csv("../data/Global_Mobility_Report.csv")
 mob_data$date = as.Date(mob_data$date, format = '%m/%d/%Y')
 
 # filter data to county level data only
