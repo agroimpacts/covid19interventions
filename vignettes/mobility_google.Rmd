@@ -122,15 +122,19 @@ df_joined %>%
 ```
 
 
-# Decrease in Mobility
+## Decrease in Mobility by County
 Narrow Down Counties that may have had a local Stay-at-Home order before State
-- Check decrease in mobility for every county after state SAH implemented
-If there is a decrease in numbers close to what was seen after state level stay-at-home in the days before, the county may have had a local stay-at-home order in place.
-- Exclude day before state-level SAH implementation from analysis?
+
+- Check decrease in workplace for every county after state SAH implemented
+
+- If there is a larger decrease before state level stay-at-home- the county may have had a local stay-at-home order in place.
+
+- Exclude day before state-level SAH implementation from analysis? (filter by days_between if needed)
 ```{r}
 # get mobility for the day after state order_date
 # not sure why -1 works and not +1 to get next day
-state_mob <- df_joined %>% filter(order_date == date-1) %>% 
+state_mob <- df_joined %>% 
+  filter(order_date == date-1) %>% 
   select(c(3:4,10))
 
 # join drop after state SAH to original data
@@ -139,11 +143,7 @@ local_mob <- merge(df_joined,state_mob, by = c("sub_region_1","sub_region_2"))
 # for every county, filter to dates before state stay-at-home
 # for every county- calculate highest drop in workplaces (min)
 # filter counties where there was a higher drop before state stay-at-home
-# if there are ties in workplace for a county- pick earliest date
-# order_date = state stay-at-home order date
-# drop_date = date of biggest drop before 
-# county_wp_drop = % workplace drop from baseline on drop_date
-# state_wp_drop = % workplace drop from baseline on order_date
+# if there are ties in workplace % for a county- pick earliest date
 county_state_mob <- local_mob %>% 
   group_by(sub_region_1, sub_region_2, date) %>% 
   filter(date < order_date) %>% 
@@ -154,12 +154,17 @@ county_state_mob <- local_mob %>%
             county_wp_drop = min(county_wp_drop),
             state_wp_drop = min(workplaces_percent_change_from_baseline.y)) %>% 
   arrange(county_wp_drop)
-# days_between = days between order_date and drop_date
+
 county_state_mob$days_between <- county_state_mob$order_date - 
   county_state_mob$drop_date
 ```
 
 ```{r}
+# order_date = state stay-at-home order date
+# drop_date = date of biggest drop before 
+# county_wp_drop = % workplace drop from baseline on drop_date
+# state_wp_drop = % workplace drop from baseline on order_date
+# days_between = days between order_date and drop_date
 datatable(county_state_mob)
 ```
 
