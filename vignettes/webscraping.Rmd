@@ -21,8 +21,63 @@ library(rvest)
 library(RSelenium)
 ```
 
+## Using rvest: State/County Stay at Home Dates from NYTimes
+```{r, eval=FALSE}
+# website with stay at home/shelter in orders
+url <- xml2::read_html("https://www.nytimes.com/interactive/2020/us/coronavirus-stay-at-home-order.html")
 
-## Using rvest
+# identify elements to scrape at the state level
+td_tags <- c('h3', 'p.l-order')
+sah_ = list()
+
+# loop through multiple elements to scrape 
+for (i in td_tags){
+  sah_[[i]] = url %>%
+  html_nodes('div.state-wrap.statewide')  %>%
+  html_nodes(i) %>% 
+  html_text
+}
+
+# list to Dataframe conversion
+names(sah_) <- c('state','order')
+sah <- as.data.frame(sah_)
+sah["county"] <- 'All'
+
+# States that did not implement a stay at home order
+# Pull the county level info with state attached
+no_sah <- html_nodes(url, "div.state-wrap ")
+for (section in no_sah) {
+  state <- html_nodes(section, "h3") %>% html_text
+  place <- html_nodes(section, "p.l-place") %>% html_text
+  order <- html_nodes(section, "p.l-order") %>% html_text
+  # counties under l-place class for every state
+  # if state has implemented SAH in one or more county
+  # extract county level SAH data
+  if (length(place) >= 1){
+    sah <- sah %>% add_row(state = state, order = order, county = place)
+  }
+}
+
+# Format Columns
+sah$state = unlist(lapply(sah$state,function(x){
+  paste(unlist(strsplit(as.character(x)," About "))[1],collapse = " ")}))
+sah$county = unlist(lapply(sah$county,function(x){
+  paste(unlist(strsplit(as.character(x)," About "))[1],collapse = " ")}))
+sah$order_type = unlist(lapply(sah$order,function(x){
+  paste(unlist(strsplit(as.character(x),", effective "))[1],collapse = "")}))
+sah$date_time = unlist(lapply(sah$order,function(x){
+  paste(unlist(strsplit(as.character(x),", effective "))[2],collapse = "")}))
+sah$time = unlist(lapply(sah$date,function(x){
+  paste(unlist(strsplit(as.character(x)," at "))[2],collapse = "")}))
+sah$date <- unlist(lapply(sah$date,function(x){
+  paste(unlist(strsplit(as.character(x)," at "))[1],collapse = "")}))
+
+# Fix date & Filter columns
+sah$order_date <- as.Date(sah$date,format = "%B %d")
+sah <- sah[c("state", "county", "order_type", "order_date", "time")]
+save(sah, file = "./data/sah.rda")
+```
+
 ```{r, eval=FALSE}
 # website with closures in Georgia
 schools <- xml2::read_html("https://www.wsbtv.com/weather/school-closings/")

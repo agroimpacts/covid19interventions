@@ -22,98 +22,110 @@ library(ggplot2)
 library(tidyverse)
 library(readr)
 library(DT)
+library(changepoint)
 ```
-
-## State/County Stay at Home Dates from NYTimes
-```{r}
-# website with stay at home/shelter in orders
-url <- xml2::read_html("https://www.nytimes.com/interactive/2020/us/coronavirus-stay-at-home-order.html")
-
-# identify elements to scrape at the state level
-td_tags <- c('h3', 'p.l-order')
-sah_ = list()
-
-# loop through multiple elements to scrape 
-for (i in td_tags){
-  sah_[[i]] = url %>%
-  html_nodes('div.state-wrap.statewide')  %>%
-  html_nodes(i) %>% 
-  html_text
-}
-
-# list to Dataframe conversion
-names(sah_) <- c('state','order')
-sah <- as.data.frame(sah_)
-sah["county"] <- 'All'
-
-# States that did not implement a stay at home order
-# Pull the county level info with state attached
-no_sah <- html_nodes(url, "div.state-wrap ")
-for (section in no_sah) {
-  state <- html_nodes(section, "h3") %>% html_text
-  place <- html_nodes(section, "p.l-place") %>% html_text
-  order <- html_nodes(section, "p.l-order") %>% html_text
-  # counties under l-place class for every state
-  # if state has implemented SAH in one or more county
-  # extract county level SAH data
-  if (length(place) >= 1){
-    sah <- sah %>% add_row(state = state, order = order, county = place)
-  }
-}
-
-# Format Columns
-sah$state = unlist(lapply(sah$state,function(x){
-  paste(unlist(strsplit(as.character(x)," About "))[1],collapse = " ")}))
-sah$county = unlist(lapply(sah$county,function(x){
-  paste(unlist(strsplit(as.character(x)," About "))[1],collapse = " ")}))
-sah$order_type = unlist(lapply(sah$order,function(x){
-  paste(unlist(strsplit(as.character(x),", effective "))[1],collapse = "")}))
-sah$date_time = unlist(lapply(sah$order,function(x){
-  paste(unlist(strsplit(as.character(x),", effective "))[2],collapse = "")}))
-sah$time = unlist(lapply(sah$date,function(x){
-  paste(unlist(strsplit(as.character(x)," at "))[2],collapse = "")}))
-sah$date <- unlist(lapply(sah$date,function(x){
-  paste(unlist(strsplit(as.character(x)," at "))[1],collapse = "")}))
-
-# Fix date & Filter columns
-sah$order_date <- as.Date(sah$date,format = "%B %d")
-sah <- sah[c("state", "county", "order_type", "order_date", "time")]
-```
-
 
 ## Google Mobility Data
 - Find date of biggest drop in mobility by county using google data
 - Check if this happens before or after SAH order is implemented
 - If a big drop before SAH -> there may be some county level implementation (?)
-```{r, fig.align='center', fig.width=8, fig.height=5}
+```{r, fig.align='center', fig.width=8, fig.height=5, message=FALSE}
+# load sah state from webscraping
+load(file = "../data/sah.rda")
 # global dataset
 mob_data <- read_csv("../data/Global_Mobility_Report.csv")
 mob_data$date = as.Date(mob_data$date, format = '%m/%d/%Y')
 
 # filter data to county level data only
-mob_data_filtered <- mob_data %>% filter(!is.na(sub_region_2) & date > "2020-03-01")
+mob_data_filtered <- mob_data %>% filter(!is.na(sub_region_2))
 # state level sah only
 sah_states <- sah %>% filter(county == 'All')
 sah_counties <- sah %>% filter(county != 'All')
 
 # join sah and google data
 df_joined <- inner_join(mob_data_filtered, sah_states, by=c('sub_region_1' = c('state')))
+```
 
-# mobility change in NY County by type
+## Change Point Detection
+```{r, warning=FALSE, include=TRUE, message=FALSE, results=FALSE}
+# select unique state and county in dataframe
+state_county <- df_joined %>% select(sub_region_1,sub_region_2) %>% distinct() 
+
+# create blank df for loop
+county_wp_mean <- data.frame(sub_region_1 = character(), 
+                sub_region_2 = character(), 
+                wp_low_mean = double())
+
+# for each county, extract workplace numbers as numeric
+# filter to dates before state stay at home and remove NA values
+for (i in 1:nrow(state_county)){
+    # workplace sorted by date as numeric
+    # print (c(state_county$sub_region_1[i], state_county$sub_region_2[i] ))
+    county <- df_joined %>% filter(sub_region_1 == state_county$sub_region_1[i] & 
+                               sub_region_2 == state_county$sub_region_2[i] &
+                               date < order_date &
+                               !is.na(workplaces_percent_change_from_baseline)) %>%
+    select('workplaces_percent_change_from_baseline') %>% 
+    as.matrix() %>% 
+    as.numeric()
+    # exclude counties that do not have enough data points
+    # need at least 2 data points for change detection
+    # county must have at least a month of data to be included (?)
+    if (length(county) > 30){
+    # Change detection to identify changes in mean
+    # changes in variance didn't return much
+    # using AMOC:At Most One Change method
+    county_mean <- cpt.mean(county,method='AMOC')
+    # print lowest change in mean before state stay at home
+    low_mean <- min(param.est(county_mean)$mean)
+    # add to dataframe
+    county_wp_mean <- rbind(county_wp_mean, 
+                            data.frame(sub_region_1 = state_county$sub_region_1[i],
+                                  sub_region_2 = state_county$sub_region_2[i],
+                                  wp_low_mean = round(low_mean, 2)))
+  }
+}
+
+# sort ascending and filter counties with highest drop (-50%+)
+top_counties <- county_wp_mean %>% 
+  arrange(wp_low_mean) %>% 
+  filter(wp_low_mean <= -50)
+```
+
+```{r}
+datatable(top_counties)
+```
+
+## Test Mean Change by County
+```{r, fig.align='center', fig.width=8, fig.height=5}
+# Test for one county
+x <-  df_joined %>% filter(sub_region_1 == "Virginia" & 
+                             sub_region_2 == "Falls Church" &
+                             date < order_date &
+                             !is.na(workplaces_percent_change_from_baseline)) %>%
+  select('workplaces_percent_change_from_baseline') %>%  
+  as.matrix() %>% 
+  as.numeric()
+# changes in mean
+v1.man=cpt.mean(x,method='AMOC')
+# example plot
+plot(v1.man,cpt.col='blue')
+# print means
+param.est(v1.man)$mean
+```
+
+
+```{r, fig.align='center', fig.width=8, fig.height=5}
+# mobility change in County by type
 df_joined %>% 
-  filter(sub_region_1 == "Colorado" & sub_region_2 == "Boulder County" 
-         & date < order_date) %>%
-  select("date","retail_and_recreation_percent_change_from_baseline",
-        "grocery_and_pharmacy_percent_change_from_baseline",
-        "parks_percent_change_from_baseline",
-        "transit_stations_percent_change_from_baseline",
-        "workplaces_percent_change_from_baseline",
-        "residential_percent_change_from_baseline")%>%
+  filter(sub_region_1 == "California" & sub_region_2 == "San Francisco County") %>%
+  select("date",
+        "workplaces_percent_change_from_baseline")%>%
   gather(key = "variable", value = "value", -date) %>% 
   mutate(type = str_replace(variable, "_percent_change_from_baseline", ""))%>%
   ggplot(aes(y = value,x = date, group= type, color = type))+
   geom_line() +
-  ggtitle("Percent Change From Baseline Before State Stay-at-Home")+
+  ggtitle("Workplace Percent Change From Baseline")+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 90), 
         legend.title = element_blank(),
@@ -121,16 +133,14 @@ df_joined %>%
   scale_x_date(date_breaks = "1 day")
 ```
 
-
 ## Decrease in Mobility by County
 Narrow Down Counties that may have had a local Stay-at-Home order before State
-
 - Check decrease in workplace for every county after state SAH implemented
 
 - If there is a larger decrease before state level stay-at-home- the county may have had a local stay-at-home order in place.
 
 - Exclude day before state-level SAH implementation from analysis? (filter by days_between if needed)
-```{r}
+```{r, eval=FALSE}
 # get mobility for the day after state order_date
 # not sure why -1 works and not +1 to get next day
 state_mob <- df_joined %>% 
@@ -159,7 +169,7 @@ county_state_mob$days_between <- county_state_mob$order_date -
   county_state_mob$drop_date
 ```
 
-```{r}
+```{r, eval=FALSE}
 # order_date = state stay-at-home order date
 # drop_date = date of biggest drop before 
 # county_wp_drop = % workplace drop from baseline on drop_date
@@ -167,4 +177,3 @@ county_state_mob$days_between <- county_state_mob$order_date -
 # days_between = days between order_date and drop_date
 datatable(county_state_mob)
 ```
-
