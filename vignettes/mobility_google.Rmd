@@ -151,5 +151,5 @@ master_joined %>%
 # join state sah date
 master_joined <- left_join(master_joined, sah_states, 
                            by=c('sub_region_1' = c('state')))
-write_csv(master_joined,"./data/master.csv",na="")
+write_csv(master_joined,"./data/master.csv", na= "")
 ```
