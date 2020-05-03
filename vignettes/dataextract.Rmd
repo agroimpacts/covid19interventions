@@ -26,6 +26,11 @@ library(tidyr)
 library(rvest)
 ```
 
+
+```{r, include=FALSE, eval=FALSE}
+load('data/twitter.rda')
+```
+
 ## Web Scraping Method
 ```{r}
 # executive order posted
@@ -77,8 +82,9 @@ bigrams_filtered <- bigrams_separated %>%
 #   count(word1, word2, sort = TRUE)
 
 # adjacent two-words frequency
-# --NOT TOO MEANINGFUL--
+# Not too meaningful at the moment
 bigrams_separated %>%
-  filter(word1 == "essential") %>%
+  filter(word1 == "church") %>%
   count(word1, word2, sort = TRUE)
 ```
+

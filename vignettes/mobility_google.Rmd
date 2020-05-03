@@ -1,0 +1,155 @@
+---
+title: "Google Mobility Data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{mobility_google}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, warning=FALSE, include=TRUE, message=FALSE}
+library(covid19interventions)
+library(rvest)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(readr)
+library(DT)
+library(changepoint)
+library(zoo)
+```
+
+## Google Mobility Data
+- Identify change point before state stay at home order is implemented
+- Calculate mean drop in workplace pop after change point
+- If a big drop before state SAH -> there may be a county level order
+```{r, fig.align='center', fig.width=8, fig.height=5, message=FALSE}
+# load sah state dates from webscraping
+# data("master")
+
+# state stay at home order dates
+sah_states <- sah %>% filter(county == 'All')
+# counties in states with no stay at home orders
+sah_counties <- sah %>% filter(county != 'All')
+
+# join sah and google data
+df_joined <- inner_join(mobility, sah_states, 
+                        by=c('sub_region_1' = c('state')))
+
+# add approx values for missing NA values by county
+df_joined <- df_joined %>%
+  group_by(sub_region_1, sub_region_2) %>%
+  mutate(workplace_int = na.approx(workplaces_percent_change_from_baseline,
+                                   na.rm = FALSE)) %>% 
+  ungroup()
+```
+
+## Change Point Detection
+```{r, warning=FALSE, include=TRUE, message=FALSE, results=FALSE}
+# select unique state and county in dataframe
+state_county <- df_joined %>% select(sub_region_1,sub_region_2) %>% distinct() 
+
+# create blank df for loop
+county_wp_mean <- data.frame(sub_region_1 = character(), 
+                sub_region_2 = character(), 
+                wp_low_mean = double())
+
+# for each county, extract workplace numbers as numeric
+# filter to dates before state stay at home and remove NA values
+for (i in 1:nrow(state_county)){
+    # workplace sorted by date as numeric
+    # print (c(state_county$sub_region_1[i], state_county$sub_region_2[i] ))
+    county <- df_joined %>% filter(sub_region_1 == state_county$sub_region_1[i] & 
+                               sub_region_2 == state_county$sub_region_2[i] &
+                               date < order_date &
+                               !is.na(workplace_int)) %>%
+    select(workplace_int) %>% 
+    as.matrix() %>% 
+    as.numeric()
+    # exclude counties that do not have enough data points
+    # need at least 2 data points for change detection
+    # county must have at least a month of data to be included
+    if (length(county) > 30){
+    # Change detection to identify changes in mean
+    # changes in variance didn't return much
+    # using AMOC:At Most One Change method
+    county_mean <- cpt.mean(county,method='AMOC')
+    # print lowest change in mean before state stay at home
+    low_mean <- min(param.est(county_mean)$mean)
+    # add to dataframe
+    county_wp_mean <- rbind(county_wp_mean, 
+                            data.frame(sub_region_1 = state_county$sub_region_1[i],
+                                  sub_region_2 = state_county$sub_region_2[i],
+                                  wp_low_mean = round(low_mean, 2)))
+  }
+}
+
+# higher rank for counties with highest drop
+# no filter applied
+counties_ranks <- county_wp_mean %>% 
+  arrange(wp_low_mean) %>% 
+   mutate(rank = dense_rank(wp_low_mean))
+```
+
+```{r}
+datatable(counties_ranks)
+```
+
+## Test Mean Change by County
+```{r, fig.align='center', fig.width=8, fig.height=5}
+# Test for one county
+x <-  df_joined %>% filter(sub_region_1 == "California" & 
+                             sub_region_2 == "Los Angeles County" &
+                             date < order_date &
+                             !is.na(workplaces_percent_change_from_baseline)) %>%
+  select('workplaces_percent_change_from_baseline') %>%  
+  as.matrix() %>% 
+  as.numeric()
+# changes in mean
+v1.man=cpt.mean(x,method='AMOC')
+# example plot
+plot(v1.man,cpt.col='blue')
+# print means
+param.est(v1.man)$mean
+```
+
+```{r, fig.align='center', fig.width=8, fig.height=5}
+# mobility change in County by type
+df_joined %>% 
+  filter(sub_region_1 == "California" & sub_region_2 == "San Francisco County") %>%
+  select("date",
+        "workplaces_percent_change_from_baseline")%>%
+  pivot_longer(names_to = "variable", values_to = "value", -date) %>% 
+  mutate(type = str_replace(variable, "_percent_change_from_baseline", ""))%>%
+  ggplot(aes(y = value,x = date, group= type, color = type))+
+  geom_line() +
+  ggtitle("Workplace Percent Change From Baseline")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90), 
+        legend.title = element_blank(),
+        legend.position="bottom") +
+  scale_x_date(date_breaks = "1 day")
+```
+
+```{r, eval = FALSE}
+# add to master dates for counties that have already been collected
+data("master")
+# join sah and google data
+master_joined <- full_join(counties_ranks, master, 
+                           by = c("sub_region_1" = "admin1", 
+                                  "sub_region_2" = "admin2"))
+# sort asc
+master_joined %>% 
+  arrange(rank)
+# join state sah date
+master_joined <- left_join(master_joined, sah_states, 
+                           by=c('sub_region_1' = c('state')))
+write_csv(master_joined,"./data/master.csv", na= "")
+```

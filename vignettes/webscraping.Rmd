@@ -1,0 +1,215 @@
+---
+title: "Web Scraoing in R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{webscraping}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE, include=FALSE}
+library(covid19interventions)
+library(dplyr)
+library(rvest)
+library(RSelenium)
+```
+
+## Using rvest: State/County Stay at Home Dates from NYTimes
+```{r, eval=FALSE}
+# website with stay at home/shelter in orders
+url <- xml2::read_html("https://www.nytimes.com/interactive/2020/us/coronavirus-stay-at-home-order.html")
+
+# identify elements to scrape at the state level
+td_tags <- c('h3', 'p.l-order')
+sah_ = list()
+
+# loop through multiple elements to scrape 
+for (i in td_tags){
+  sah_[[i]] = url %>%
+  html_nodes('div.state-wrap.statewide')  %>%
+  html_nodes(i) %>% 
+  html_text
+}
+
+# list to Dataframe conversion
+names(sah_) <- c('state','order')
+sah <- as.data.frame(sah_)
+sah["county"] <- 'All'
+
+# States that did not implement a stay at home order
+# Pull the county level info with state attached
+no_sah <- html_nodes(url, "div.state-wrap ")
+for (section in no_sah) {
+  state <- html_nodes(section, "h3") %>% html_text
+  place <- html_nodes(section, "p.l-place") %>% html_text
+  order <- html_nodes(section, "p.l-order") %>% html_text
+  # counties under l-place class for every state
+  # if state has implemented SAH in one or more county
+  # extract county level SAH data
+  if (length(place) >= 1){
+    sah <- sah %>% add_row(state = state, order = order, county = place)
+  }
+}
+
+# Format Columns
+sah$state = unlist(lapply(sah$state,function(x){
+  paste(unlist(strsplit(as.character(x)," About "))[1],collapse = " ")}))
+sah$county = unlist(lapply(sah$county,function(x){
+  paste(unlist(strsplit(as.character(x)," About "))[1],collapse = " ")}))
+sah$order_type = unlist(lapply(sah$order,function(x){
+  paste(unlist(strsplit(as.character(x),", effective "))[1],collapse = "")}))
+sah$date_time = unlist(lapply(sah$order,function(x){
+  paste(unlist(strsplit(as.character(x),", effective "))[2],collapse = "")}))
+sah$time = unlist(lapply(sah$date,function(x){
+  paste(unlist(strsplit(as.character(x)," at "))[2],collapse = "")}))
+sah$date <- unlist(lapply(sah$date,function(x){
+  paste(unlist(strsplit(as.character(x)," at "))[1],collapse = "")}))
+
+# Fix date & Filter columns
+sah$order_date <- as.Date(sah$date,format = "%B %d")
+sah <- sah[c("state", "county", "order_type", "order_date", "time")]
+save(sah, file = "./data/sah.rda")
+```
+
+```{r, eval=FALSE}
+# website with closures in Georgia
+schools <- xml2::read_html("https://www.wsbtv.com/weather/school-closings/")
+
+# identify elements to scrape
+td_tags <- c('td.name', 'td.county', 'td.date')
+closures_ = list()
+
+# the html_table way does not work because of description column for some rows
+# loop through multiple elements to scrape each column of interest
+for (i in td_tags){
+  closures_[[i]] = schools %>%
+  html_nodes(i) %>%
+  html_text()
+}
+
+# list to Dataframe converstion
+names(closures_) <- c('name','county','date')
+closures <- as.data.frame(closures_)
+
+# Format Date Columns
+closures$start_date = unlist(lapply(closures$date,function(x){
+  paste(unlist(strsplit(as.character(x)," "))[2:3],collapse = " ")}
+))
+closures$end_date = unlist(lapply(closures$date,function(x){
+  paste(unlist(strsplit(as.character(x)," "))[4:5],collapse = " ")}
+))
+
+# remove old date column 
+closures <- closures[,-3]
+# add state column
+closures$state <- 'Georgia'
+
+# assign types to each row based on UArizona codes
+closures$type <- ''
+closures$type =ifelse(grepl("School|Academy", closures$name, 
+                            fixed = FALSE),"Pub-school-closed",closures$type)
+closures$type =ifelse(grepl("Church", closures$name, 
+                            fixed = FALSE),"Churches-closed",closures$type)
+closures$type =ifelse(grepl("College|University", closures$name, 
+                            fixed = FALSE),"Uni-school-closed",closures$type)
+closures$type =ifelse(grepl("Government|City", closures$name, 
+                            fixed = FALSE),"Govt-fac-closed",closures$type)
+```
+
+
+## Selenium Way
+```{bash, eval=FALSE}
+# start Selenium Server
+# move exe to package for this to run
+source(java -jar selenium-server-standalone-3.9.1.jar)
+```
+
+```{r, eval=FALSE}
+# Selenium way
+library(RSelenium)
+# .jar file here: http://selenium-release.storage.googleapis.com/index.html?path=3.9/
+#URL with js-rendered content to be scraped
+driver<- rsDriver(browser=c("firefox"))
+remDr <- driver[["client"]]
+remDr$open()
+
+remDr$navigate("https://www.wsbtv.com/weather/school-closings/")
+
+# test
+# remDr$maxWindowSize()
+# remDr$screenshot(display = TRUE)
+
+# filter to county schools through search box
+searchbox <- remDr$findElement(using = "class name", 'filter-table')
+searchbox$sendKeysToElement(list("County Schools", key = "enter"))
+
+# close ad
+Sys.sleep(8)
+ad <- remDr$findElement(using = "class name", 'widget_fb_close')
+ad$clickElement()
+
+# columns to scrape
+scrape_col <- c('name','county','date')
+name_elmt <- remDr$findElements(using = "class name", 'name')
+county_elmt <- remDr$findElements(using = "class name", 'county')
+date_elmt <- remDr$findElements(using = "class name", 'date')
+
+# extract text form col
+name_scraped <- unlist(lapply(name_elmt, function(x){x$getElementText()}))
+county_scraped <- unlist(lapply(county_elmt, function(x){x$getElementText()}))
+date_scraped <- unlist(lapply(date_elmt, function(x){x$getElementText()}))
+
+# next page
+webElem<-remDr$findElement(using = "id", value = "page-selector-2")
+webElem$clickElement()
+
+# need to loop through functions earlier for each page..
+```
+
+
+```{r, eval=FALSE}
+# Selenium way
+library(RSelenium)
+# .jar file here: http://selenium-release.storage.googleapis.com/index.html?path=3.9/
+#URL with js-rendered content to be scraped
+driver<- rsDriver(browser=c("firefox"))
+remDr <- driver[["client"]]
+remDr$open()
+
+remDr$navigate("https://www.unacast.com/covid19/social-distancing-scoreboard")
+
+# test
+# remDr$maxWindowSize()
+# remDr$screenshot(display = TRUE)
+
+# filter to county schools through search box
+#example script
+
+library(rvest)
+
+my_session <- html_session()
+
+library(rvest)
+library(stringr)
+
+#extract source as hown in the image above
+iframe_src <-  html_session('https://covid19-scoreboard.unacast.com/') %>%
+    html_node("iframe") %>%
+    html_attr("src")
+#get the url to that iframe
+iframe_url <- str_c("https://scrapethissite.com",iframe_src)
+#extract turtle names:
+turtle_names <- html_session(iframe_url) %>%
+    html_nodes("div.root") %>%
+    html_text()
+print(turtle_names)
+```
+
+
