@@ -15,12 +15,18 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
+
 library(devtools)
 library(usethis)
 library(covid19interventions)
 
 # run if you don't have covid19clark
 devtools::install_github("agroimpacts/covid19clark")
+
+library(covid19interventions)
+# run if you don't have covid19clark
+# devtools::install_github("agroimpacts/covid19clark", build_vignettes = TRUE)
+
 library(covid19clark)
 ```
 
@@ -40,37 +46,62 @@ head(county_interventions)
 head(us_cases_daily$county)
 ```
 
+
 ```{r}
+#------------------------------------------------------------------------------------------------------------
 # How many cases and deaths were recorded the date the intervention measures were put in place?
 library(dplyr)
+library(tidyr)
 
-#join lyndons data to ours, select and filter by county SAH date
-county_interventions %>% 
-  inner_join(county_interventions, us_cases_daily, by = "SAH_County_Date") %>% 
-  select(SAH_County_Date, countyName, cases) %>% 
-  filter("SAH_County_Date") %>% 
-  group_by(countyName) %>%
-  mutate(finalrank=max(rank),finalFID=FID[which.max(rank)])
+df1 <- as.data.frame(county_interventions)
+df1$admin2 <- sapply(df1$admin2, tolower)
+df1$admin1 <- sapply(df1$admin1, tolower)
+df1$acronym <- sapply(df1$acronym, tolower)
 
-group_by(.data, ..., add = FALSE, .drop = group_by_drop_default(.data))
+df1$admin2_rep = str_replace(df1$admin2, " county", "")
 
-#copy code to filter to day after and create a new dataframe
+df2 <- as.data.frame(us_cases_daily$county)
 
-# have new dataframes
-
-#1.Loop through all counties in the list to find the dates and number of cases&deaths for before, during, and after interventions were put in place. 
-
-#create function t
-
-#Loop through all counties
-county_loop <- lapply(county_interventions$SAH_County_Date, function(x) if(is.numeric(x)) sd(x)) 
+#------------------------------------------------------------------------------------------------------------
+#Values for day of
+cima2 <- inner_join(df1,df2, by = c("SAH_County_Date" = "date",
+                                    "admin1" = "state1", 
+                                    "admin2_rep" = "county.x")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
 
 
-#2.Then do a plot where the date is on the x axis and the number of cases and deaths are on the y axis.
+#------------------------------------------------------------------------------------------------------------
+#new dataframe of cases one week before
+before1 <- df1
+before1$SAH_County_Date = before1$SAH_County_Date - 7 
+
+before1_df <- inner_join(before1,df2, by = c("SAH_County_Date" = "date",
+                                    "admin1" = "state1", 
+                                    "admin2_rep" = "county.x")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+
+#------------------------------------------------------------------------------------------------------------
+#New dataframe of cases one week after
+after <- df1
+after$SAH_County_Date = after$SAH_County_Date + 7 
+
+after_df <- inner_join(after,df2, by = c("SAH_County_Date" = "date",
+                                    "admin1" = "state1", 
+                                    "admin2_rep" = "county.x")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+
+#------------------------------------------------------------------------------------------------------------
+#Plot
+library(ggplot2)
+library(tidyverse)
 
 
-#3.After plotting those two lines find the places that showed the highest and lowest drops due to the intervention or lack thereof.
+g <- ggplot(data = cima2, aes(x=cima2$admin2_rep, y=case_pop)) + geom_bar( stat="identity", fill = 'steelblue')
+g
+
 
 ```
 
 
+=======
+>>>>>>> 11f5f32de5ce063f2f0450fc242109548c9e10c5
