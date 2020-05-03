@@ -14,14 +14,14 @@
 #' intervention_breakpts(x, y)
 
 intervention_breakpts <- function(x, y){
-  # warning if packages not installed
-  if (!require(strucchange)) {
-    stop("strucchange not installed")
-  } else if (!require(segmented)){
-    stop("segmented not installed")
-  } else {
-    break
-  }
+  # # warning if packages not installed
+  # if (!require(strucchange)) {
+  #   stop("strucchange not installed")
+  # } else if (!require(segmented)){
+  #   stop("segmented not installed")
+  # } else {
+  #   break
+  # }
 
   # coerce x and y into a tibble
   # param x renamed as jdates
