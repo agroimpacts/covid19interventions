@@ -12,8 +12,7 @@ elbowPoint(x, y)
 \arguments{
 \item{x}{Date range in julian date, origin = '2019-12-31'}
 
-\item{y}{Rate of change, k in y = Ae^(kx)
-elbowPoint(x, y)}
+\item{y}{Rate of change, k in y = Ae^(kx)}
 }
 \value{
 Date of elbow changepoint in Julian and Date format
@@ -21,4 +20,7 @@ Date of elbow changepoint in Julian and Date format
 \description{
 This function detects the change point of a curve with
 an elbow (or knee) shape
+}
+\examples{
+elbowPoint(x, y)
 }
