@@ -33,8 +33,6 @@ library(covid19clark)
 data("county_interventions")
 # covid cases
 data("us_cases_daily")
-# state SAH dates scraped from NY Times
-nytimes_sah <- read.csv(file = 'data/NYTimesSAH.csv') %>% as_tibble()
 ```
 
 ### Sample
@@ -43,8 +41,6 @@ nytimes_sah <- read.csv(file = 'data/NYTimesSAH.csv') %>% as_tibble()
 head(county_interventions)
 # covid cases by county
 head(us_cases_daily$county)
-# nytimes sah dates
-head(nytimes_sah)
 ```
 
 ---
@@ -63,6 +59,11 @@ library(segmented)
 ## Data prep
 Join and assemble data so we have...
 ```{r}
+# state SAH dates scraped from NY Times
+nytimes_sah <- read.csv(file = 'data/NYTimesSAH.csv') %>% as_tibble()
+# nytimes sah dates
+head(nytimes_sah)
+
 us_state <- us_cases_daily$state
 us_county <- us_cases_daily$county
 
@@ -203,11 +204,9 @@ slope(my.seg)
 #   filter(state2 == state, county.x == county) %>% as_data_frame()
 ```
 
-
-
 # elbow point
 ```{r}
-elbowPoint(jdates, k)
+# elbowPoint(jdates, k)
 ```
 
 ```{r}
