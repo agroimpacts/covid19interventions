@@ -8,6 +8,8 @@
 #' @return Date of elbow changepoint in Julian and Date format
 #' @param x Date range in julian date, origin = '2019-12-31'
 #' @param y Rate of change, k in y = Ae^(kx)
+#' @export
+#' @examples
 #' elbowPoint(x, y)
 
 elbowPoint <- function(x, y){
