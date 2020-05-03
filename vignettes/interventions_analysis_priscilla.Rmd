@@ -1,0 +1,234 @@
+---
+title: "COVID-19 Interventions Analysis - Priscilla Ahn"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{interventions_analysis_priscilla}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### Setup
+```{r setup}
+library(covid19interventions)
+# run if you don't have covid19clark
+# devtools::install_github("agroimpacts/covid19clark", build_vignettes = TRUE)
+library(covid19clark)
+```
+
+### Load data from `covid19interventions` & `covid19clark`
+```{r}
+# data load
+# covid interventions by county
+data("county_interventions")
+# covid cases
+data("us_cases_daily")
+# state SAH dates scraped from NY Times
+nytimes_sah <- read.csv(file = 'data/NYTimesSAH.csv') %>% as_tibble()
+```
+
+### Sample
+```{r}
+# interventions
+head(county_interventions)
+# covid cases by county
+head(us_cases_daily$county)
+# nytimes sah dates
+head(nytimes_sah)
+```
+
+---
+
+## Load packages
+```{r}
+library(devtools)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+library(strucchange)
+library(segmented)
+```
+
+## Data prep
+Join and assemble data so we have...
+```{r}
+us_state <- us_cases_daily$state
+us_county <- us_cases_daily$county
+
+# state_join
+tmptb <- nytimes_sah %>% mutate(state = tolower(nytimes_sah$state)) %>% 
+  mutate(order_date = as.Date(order_date, format = "%m/%d/%Y")) %>% 
+  filter(county == 'All') %>% select(state, order_date)
+state_join <- us_state %>% select(state1, state2, date, cases, deaths) %>% 
+  inner_join(tmptb, by = c("state1" = "state"))
+
+# county_join
+## drop words like "county" and "borough" from admin2
+county_interventions$admin2 <- gsub("\\s*\\w*$", "", county_interventions$admin2)
+county_interventions <- county_interventions %>% 
+  mutate(acronym = tolower(county_interventions$acronym)) %>% 
+  mutate(admin1 = tolower(county_interventions$admin1)) %>% 
+  mutate(admin2 = tolower(county_interventions$admin2))
+tmptb <- us_county %>% select(state1, county.x, cases, deaths)
+county_join <- county_interventions %>%
+  select(rank, acronym, admin1, admin2, SAH_County_Date, SAH_State_Date) %>% 
+  inner_join(tmptb, by = c("admin1" = "state1", "admin2" = "county.x"))
+## if SAH_County_Date is blank, fill with SAH_State_Date column
+county_join$SAH_County_Date <- coalesce(county_join$SAH_County_Date,
+                                        county_join$SAH_State_Date)
+
+# sample
+head(state_join)
+head(county_join)
+```
+
+# Generate plot
+- State level
+```{r}
+# vector of state acronyms to loop
+state <- state_join %>% distinct(state1) %>% select(state1)
+
+# temp before I figure out looping T_T
+state <- state %>% slice(1)
+state
+
+# isolate variables of interest
+state_tb <- state_join %>% select(state1, date, cases, order_date) %>% 
+  filter(state1 == state[[1]])
+
+# convert date to julian day
+state_tb$jday <- yday(state_tb$date)
+
+# calculate k value in y = Ae^(kx)
+# normalize cases curve by exponential func using natural log
+state_tb$cases_log <- log(state_tb$cases)
+state_tb$k <- NA
+state_tb$k[2:length(state_tb$k)] <- 
+  diff(state_tb$cases_log)/diff(state_tb$jday)
+
+# variety of plots
+## date v. cases
+gg1 <- ggplot(state_tb, aes(x=date, y=cases)) + geom_point()
+gg1
+## date v. k coeff
+gg2 <- ggplot(state_tb, aes(x=date, y=k)) + geom_point()
+gg2
+# date v. ln(cases) as point and line
+gg3 <- ggplot(state_tb, aes(x=date, y=cases_log)) + geom_point()
+gg3 + geom_line(aes(x=date, y=cases_log, color = 'red'))
+
+# calculate fitted k value
+## remove rows with any na values
+state_tb_fit <- state_tb %>% drop_na()
+
+## smooth cases_log
+lw <- loess(cases_log ~ jday, state_tb_fit)
+state_tb_fit$cases_logfit <- lw$fitted
+
+# date v. logfit
+gg4 <- ggplot(state_tb_fit, aes(x=date, y=cases_logfit)) + geom_line()
+gg4
+
+## calculate k values to smoothed cases_log curve
+state_tb_fit$kfit <- NA
+state_tb_fit$kfit[2:length(state_tb_fit$kfit)] <- 
+  diff(state_tb_fit$cases_logfit)/diff(state_tb_fit$jday)
+
+# date v. kfit
+gg6 <- ggplot(state_tb_fit, aes(x=date, y=kfit)) + geom_line()
+gg6 + geom_vline(xintercept = unique(state_tb$order_date), color = "blue")
+```
+
+# intervention breakpoints
+```{r}
+x <- state_tb_fit %>% pull(jday)
+y <- state_tb_fit %>% pull(kfit)
+
+output <- intervention_breakpts(x, y)
+
+t <- output[[1]] %>% mutate(jdates=as.Date(jdates, origin = '2019-12-31'))
+my.lm <- output[[2]][[1]]
+summary(my.lm)
+
+my.seg <- output[[2]][[2]]
+my.model <- output[[2]][[3]] %>% mutate(jdates=as.Date(jdates, origin = '2019-12-31'))
+my.lines <- as.Date(round(output[[2]][[4]]), origin = '2019-12-31')
+summary(my.seg)
+
+# plot julian days and k values
+t_plot <- ggplot(t, aes(x = jdates, y = rate)) + geom_line() +
+  labs(x = "date", y = "k")
+t_plot
+
+# plot piece-wise linear function plot
+model_plot <- ggplot(my.model, aes(x = jdates, y = rate)) + geom_line()
+model_plot
+
+# plot all + vertical break pts
+t_plot + geom_line(data = my.model, aes(x=jdates, y=rate), colour = "tomato") +
+  geom_vline(xintercept = my.lines, linetype = "dashed") +
+  geom_vline(xintercept = tmpdate, colour = "blue")
+
+# print estimated julian day of breakpoint(s)
+my.lines
+
+# print slopes of segments before and after breakpoint(s)
+slope(my.seg)
+```
+
+- County level
+```{r}
+# state <- us_county %>% distinct(state2, county.x) %>% select(state2, county.x)
+# state
+# county <- us_county %>% distinct(state2, county.x) %>% select(state2, county.x)
+# county
+
+# x <- us_county %>% filter(state2 == state, county.x == county) %>% pull(date)
+# y <- us_county %>% filter(state2 == state, county.x == county) %>% pull(cases)
+
+# xylog <- us_county %>% select(state2, county.x, date, cases) %>%
+#   mutate(cases = log(us_county$cases)) %>%
+#   mutate(date = yday(us_county$date)) %>%
+#   filter(state2 == state, county.x == county) %>% as_data_frame()
+```
+
+
+
+# elbow point
+```{r}
+elbowPoint(jdates, k)
+```
+
+```{r}
+# # smooth cases log curve
+# lw1 <- loess(xylog[[2]]~xylog[[1]])
+# plot(xylog[[1]], lw1$fitted, type="l")
+# diff_fitted <- diff(lw1$fitted)
+# x <- xylog %>% pull(date)
+# jdate <- yday(x)
+# diff_jdat <- diff(jdate)
+# k <- diff_fitted/diff_
+# plot(x[2:length(x)], k)
+# 
+# # smooth k values
+# lw2 <- loess(k~xylog[[2]][2:length(xylog[[2]])], span = 0.75)
+# smoothed50 <- predict(lw2)
+# plot(x[2:length(x)], lw2$fitted, type = "l")
+# lines(smoothed50, x= x[2:length(x)], col = "red")
+```
+
+
+
+
+
