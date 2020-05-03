@@ -17,7 +17,6 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(devtools)
 library(usethis)
-
 library(covid19interventions)
 
 # run if you don't have covid19clark
@@ -48,9 +47,9 @@ library(dplyr)
 #join lyndons data to ours, select and filter by county SAH date
 county_interventions %>% 
   inner_join(county_interventions, us_cases_daily, by = "SAH_County_Date") %>% 
-  select(surveys, plot_id, species_id, weight) %>% 
-  filter(CARRIER == "UA") %>% 
-  group_by(Date,CID) %>%
+  select(SAH_County_Date, countyName, cases) %>% 
+  filter("SAH_County_Date") %>% 
+  group_by(countyName) %>%
   mutate(finalrank=max(rank),finalFID=FID[which.max(rank)])
 
 group_by(.data, ..., add = FALSE, .drop = group_by_drop_default(.data))
