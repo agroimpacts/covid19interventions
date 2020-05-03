@@ -126,7 +126,7 @@ df_joined %>%
   filter(sub_region_1 == "California" & sub_region_2 == "San Francisco County") %>%
   select("date",
         "workplaces_percent_change_from_baseline")%>%
-  gather(key = "variable", value = "value", -date) %>% 
+  pivot_longer(names_to = "variable", values_to = "value", -date) %>% 
   mutate(type = str_replace(variable, "_percent_change_from_baseline", ""))%>%
   ggplot(aes(y = value,x = date, group= type, color = type))+
   geom_line() +

@@ -1,5 +1,7 @@
 # install.packages('gsheet')
 library(gsheet)
+library(dplyr)
+library(zoo)
 
 # --DATA LOAD--
 # From Google Sheets
@@ -19,6 +21,12 @@ county_interventions$SAH_State_Date = as.Date(county_interventions$SAH_State_Dat
 mobility$date = as.Date(mobility$date, format = '%m/%d/%Y')
 # filter data to county level data only
 mobility <- mobility %>% filter(!is.na(sub_region_2))
+# interpolate for missing workplace mobility data
+mobility <- mobility %>%
+  group_by(sub_region_1, sub_region_2) %>%
+  mutate(workplace_int = na.approx(workplaces_percent_change_from_baseline,
+                                   na.rm = FALSE)) %>%
+  ungroup()
 
 # --SAVE AS R OBJECT--
 usethis::use_data(twitter, overwrite = TRUE)
