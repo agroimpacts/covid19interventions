@@ -26,7 +26,8 @@ intervention_breakpts <- function(x, y){
   # coerce x and y into a tibble
   # param x renamed as jdates
   # param y renamed as rate
-  t <- list(jdates = x[2:length(x)], rate = y) %>% as_tibble()
+  t <- list(jdates = x[2:length(x)], rate = y) %>% as_tibble() %>%
+    mutate(rate = na.approx(k, na.rm = FALSE))
 
   # estimate breakpoints
   bp <- breakpoints(t$rate ~ t$jdates, h=.25)
