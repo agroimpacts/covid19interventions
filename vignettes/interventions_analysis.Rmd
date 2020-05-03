@@ -1,0 +1,77 @@
+---
+title: "COVID-19 Interventions Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{interventions_analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(devtools)
+library(usethis)
+
+library(covid19interventions)
+
+# run if you don't have covid19clark
+devtools::install_github("agroimpacts/covid19clark")
+library(covid19clark)
+```
+
+
+```{r}
+# data load
+# covid interventions by county
+data("county_interventions")
+# covid cases
+data("us_cases_daily")
+```
+
+```{r}
+# interventions
+head(county_interventions)
+# covid cases by county
+head(us_cases_daily$county)
+```
+
+```{r}
+# How many cases and deaths were recorded the date the intervention measures were put in place?
+library(dplyr)
+
+#join lyndons data to ours, select and filter by county SAH date
+county_interventions %>% 
+  inner_join(county_interventions, us_cases_daily, by = "SAH_County_Date") %>% 
+  select(surveys, plot_id, species_id, weight) %>% 
+  filter(CARRIER == "UA") %>% 
+  group_by(Date,CID) %>%
+  mutate(finalrank=max(rank),finalFID=FID[which.max(rank)])
+
+group_by(.data, ..., add = FALSE, .drop = group_by_drop_default(.data))
+
+#copy code to filter to day after and create a new dataframe
+
+# have new dataframes
+
+#1.Loop through all counties in the list to find the dates and number of cases&deaths for before, during, and after interventions were put in place. 
+
+#create function t
+
+#Loop through all counties
+county_loop <- lapply(county_interventions$SAH_County_Date, function(x) if(is.numeric(x)) sd(x)) 
+
+
+#2.Then do a plot where the date is on the x axis and the number of cases and deaths are on the y axis.
+
+
+#3.After plotting those two lines find the places that showed the highest and lowest drops due to the intervention or lack thereof.
+
+```
+
+
