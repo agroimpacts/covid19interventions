@@ -1,0 +1,194 @@
+---
+title: "COVID-19 Interventions Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{interventions_analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+
+
+library(devtools)
+library(usethis)
+library(covid19interventions)
+
+# run if you don't have covid19clark
+devtools::install_github("agroimpacts/covid19clark")
+
+library(devtools)
+library(usethis)
+library(covid19interventions)
+
+devtools::install_github("agroimpacts/covid19clark")
+library(covid19clark)
+```
+
+
+```{r}
+# data load
+# covid interventions by county
+data("county_interventions")
+# covid cases
+data("us_cases_daily")
+```
+
+```{r}
+# interventions
+head(county_interventions)
+# covid cases by county
+head(us_cases_daily$county)
+```
+
+<<<<<<< HEAD
+
+```{r}
+#------------------------------------------------------------------------------------------------------------
+# How many cases and deaths were recorded the date the intervention measures were put in place?
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(stringr)
+
+df1 <- as.data.frame(county_interventions)
+df1$admin2 <- sapply(df1$admin2, tolower)
+df1$admin1 <- sapply(df1$admin1, tolower)
+df1$acronym <- sapply(df1$acronym, tolower)
+
+
+df1$admin2_rep = str_replace(df1$admin2, " county", "")
+
+df2 <- as.data.frame(us_cases_daily$county)
+df3 <- as.data.frame(us_cases_daily$state)
+#------------------------------------------------------------------------------------------------------------
+#Values for day of
+cima2 <- inner_join(df1,df2, by = c("SAH_County_Date" = "date",
+                                    "admin1" = "state1", 
+                                    "admin2_rep" = "county.x")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+
+
+#------------------------------------------------------------------------------------------------------------
+#new dataframe of cases one week before
+before1 <- df1
+before1$SAH_County_Date = before1$SAH_County_Date - 7 
+
+before1_df <- inner_join(before1,df2, by = c("SAH_County_Date" = "date",
+                                    "admin1" = "state1", 
+                                    "admin2_rep" = "county.x")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+
+#------------------------------------------------------------------------------------------------------------
+#New dataframe of cases one week after
+after <- df1
+after$SAH_County_Date = after$SAH_County_Date + 7 
+
+after_df <- inner_join(after,df2, by = c("SAH_County_Date" = "date",
+                                    "admin1" = "state1", 
+                                    "admin2_rep" = "county.x")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+
+#------------------------------------------------------------------------------------------------------------
+#State Before
+state_before <- df1
+state_before$SAH_State_Date= state_before$SAH_State_Date - 14 
+
+state_before_df <- inner_join(state_before,df3, by = c("SAH_State_Date" = "date",
+                                    "admin1" = "state1")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+
+#------------------------------------------------------------------------------------------------------------
+#State During
+state_during <- df1
+#state_before$SAH_State_Date= state_before$SAH_State_Date 
+
+state_during_df <- inner_join(state_during,df3, by = c("SAH_State_Date" = "date",
+                                    "admin1" = "state1")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+
+#------------------------------------------------------------------------------------------------------------
+#State After
+state_after <- df1
+state_after$SAH_State_Date = state_before$SAH_State_Date + 28 
+
+state_after_df <- inner_join(state_after,df3, by = c("SAH_State_Date" = "date",
+                                    "admin1" = "state1")) %>% 
+  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+
+#------------------------------------------------------------------------------------------------------------
+
+# Get US map
+#usa <- map_data("state")
+#gg <- ggplot()
+#gg <- gg + geom_path(data = usa, aes(x = long, y = lat, group = group) , fill="#ffffff", color="#0e0e0e", size=0.15)
+
+# your bubbles
+#gg <- gg + geom_point(data=cima2, aes(x= cases, y = cases) color="#AD655F") 
+#gg <- gg + labs(title="Bubbles")
+# much better projection for US maps
+#gg <- gg + coord_map(projection="albers", lat=39, lat1=45)
+#gg <- gg + theme_map()
+#gg <- gg + theme(legend.position="bottom")
+#gg <- gg + theme(plot.title=element_text(size=16))
+#gg
+
+#-----------------------------------------------------------------------------------------------------------------------------
+devtools::install_github("wmurphyrd/fiftystater")
+
+library(ggplot2)
+library(fiftystater)
+
+data("fifty_states") # this line is optional due to lazy data loading
+head(fifty_states)
+fifty_states <- as.data.frame(fifty_states)
+
+stateb4 <- right_join(state_before_df, fifty_states, by = c("admin1" = "id"))
+statedur <- right_join(state_during_df, fifty_states, by = c("admin1" = "id"))
+stateaft <- right_join(state_after_df, fifty_states, by = c("admin1" = "id"))
+
+# map_id creates the aesthetic mapping to the state name column in your data
+options(scipen=10000)
+p <- ggplot(stateaft, aes(map_id = admin1)) + 
+  # map points to the fifty_states shape data
+  geom_map(aes(fill = case_pop), map = fifty_states) + 
+  expand_limits(x = fifty_states$long, y = fifty_states$lat) +
+  coord_map() +
+  scale_x_continuous(breaks = NULL) + 
+  scale_y_continuous(breaks = NULL) +
+  labs(x = "", y = "") +
+  theme(legend.position = "bottom", 
+        panel.background = element_blank())+ theme(legend.key.width = unit(5, "cm")) + ggtitle("Normalized State Case Occurence Four Weeks after SAH Intervention")
+p
+
+   
+```
+
+
+=======
+```{r}
+#How many cases and deaths were recorded the date the intervention measures were put in place?
+
+#1.Loop through all counties in the list to find the dates and number of cases&deaths for before, during, and after interventions were put in place. 
+
+
+
+#2.Then do a plot where the date is on the x axis and the number of cases and deaths are on the y axis.
+
+
+
+
+#3.After plotting those two lines find the places that showed the highest and lowest drops due to the intervention or lack thereof.
+
+```
+
+
+
+>>>>>>> master
