@@ -20,6 +20,7 @@ library(changepoint)
 library(shinythemes)
 
 data(mobility)
+data(final_table)
 ```
 
 ## Overview

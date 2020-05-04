@@ -32,4 +32,5 @@ mobility <- mobility %>%
 usethis::use_data(twitter, overwrite = TRUE)
 usethis::use_data(county_interventions, overwrite = TRUE)
 usethis::use_data(mobility, overwrite = TRUE)
+usethis::use_data(final_table, overwrite = FALSE)
 
