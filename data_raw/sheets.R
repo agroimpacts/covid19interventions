@@ -11,6 +11,7 @@ twitter <- gsheet2tbl('https://docs.google.com/spreadsheets/d/15s_bO2TgGo4KPJX8E
 # mobility data downloaded from google (as of April 9)
 mobility <- read_csv("./data/Global_Mobility_Report.csv")
 
+
 # --DATA CONVERSION--
 # convert date columns for final data load
 county_interventions <- master %>% filter(!is.na(SAH_County_Date))

@@ -101,15 +101,23 @@ output$county_selector <- renderUI({
 
 
 ## Interventions & COVID-19 Cases Curve
-Overview of our database
-
-## Before & During Interventions
-
-## During & After Interventions
-
+- Database Creation: Collecting County & State SAH Intervention Data for U.S
+- Data Table
 ```{r}
 
 ```
+
+
+## Before Interventions
+![Before](C:Users/MEnger/Desktop/rproj/covid19interventions/vignettes/output/state_before_plot.PNG)
+
+## During & After Interventions
+![During](C:Users/MEnger/Desktop/rproj/covid19interventions/vignettes/output/state_during_plot.PNG)
+
+## After Interventions
+![After](C:Users/MEnger/Desktop/rproj/covid19interventions/vignettes/output/state_after_plot.PNG)
+
+
 ## Rationale- NOAH 
 - Why we collected the attributes we did?
 - Variety of variables that could have influenced a later SAH order
