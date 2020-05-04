@@ -34,12 +34,18 @@ The data will be extracted from various sources and added to the COVID-19 US Spa
 
 **Max**: Research & analysis. Building interventions database for MA. <br/>
 
-First round of Qs:
-- What interventions are happening the most among state counties? Of the interventions, which are successful in flattening curve?
-- How have the date of interventions affected the curve?
+Research Qs:
+- Did intervention measures affect the curve?
+- How many cases and deaths were recorded the date the intervention measures were put in place?
+- Which states observed the strictest and most lenient policies?
+- What variables were the main drivers of interventions (quantity of cases and deaths, location (contiguity), rurality, political party, population, etc.)?
 - How have different political parties responded in terms of time, intervention type, and location?
-- Observe Mask intervention effects on the curve
-- Which states observe the strictest policies<br/>
+- Did counties intervene before the state? In what way?
+
+Other Qs:
+- How did supply shortage (binary Y/N) relate to cases and deaths?
+- How does rurality relate to cases and deaths?
+<br/>
 
 ## Timeline
 - **Week 1**: Identify data sources, investigate methods, create plan

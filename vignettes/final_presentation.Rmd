@@ -1,0 +1,129 @@
+---
+title: "COVID-19 Spatial Interventions Database"
+author: "Priyanka Verma, Priscilla Ahn, Maxwell Enger, Noah Berkowitz"
+date: "5/2/2020"
+output: 
+  ioslides_presentation: 
+    highlight: null
+    incremental: yes
+    smaller: yes
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(covid19interventions)
+library(shiny)
+library(ggplot2)
+library(tidyverse)
+library(changepoint)
+library(shinythemes)
+
+data(mobility)
+data(df_joined)
+```
+
+## Overview
+- The United States confirmed its first case of COVID-19 on _Jan. 21, 2020_
+- On _Feb. 26, 2020_, the first suspected case of a community spread in the U.S. was reported
+- Local government bodies were first to enforce stay-at-home   to prevent the spread of COVID-19 before statewide measures were implemented
+
+## Goal
+- Identify counties that enforced stay-at-home measures before their state to address the COVID-19 pandemic 
+- Understand if the county-level intervention to minimize direct human contact affects the curve
+
+## Methodology
+- We started by collecting data for the two most and least populated counties in every state- Slow process
+- Google's Mobility dataset utilized to expedite the collection process
+
+## Change in Mobility
+- Movement information released by Google to support data-driven decision making in managing COVID-19
+- Collected through Google products such as Google Maps
+- Utilized to identify counties with the highest drop in workplace visits before statewide order implemented
+
+## Change-Point Analysis
+- Change-point detection technique used to determine change in workplace mobility curve before statewide stay-at-home order implemented for every county
+- Specifically, At-Most-One-Change (AMOC) method used to determine a single point of where significant change is seen
+- Mean of workplace mobility calculated pre and post change point
+- Counties ranked based on mean change in workplace mobility post changepoint
+
+## Change in Mobility by County
+```{r, echo = FALSE}
+fluidPage(
+    sidebarLayout(
+          sidebarPanel(
+            htmlOutput("state_selector"),
+            htmlOutput("county_selector"), width = "5"),
+           mainPanel(plotOutput("cpplot"),
+                     textOutput("pre_cp"),
+                     textOutput("post_cp"),
+                     width = 7)))
+        
+
+output$state_selector <- renderUI({
+selectInput(
+  inputId = "state", 
+  label = "State:",
+  choices = as.character(unique(df_joined$sub_region_1)),
+  selected = "Alabama")
+  })
+
+output$county_selector <- renderUI({
+  available <- df_joined[df_joined$sub_region_1 == input$state, "sub_region_2"]
+  selectInput(
+    inputId = "county", 
+    label = "County:",
+    choices = unique(available),
+    selected = unique(available)[1])
+})
+
+
+  
+  output$cpplot <- renderPlot({
+    cp_calc <- df_joined %>% filter(sub_region_1 == input$state & 
+                               sub_region_2 == input$county &
+                               date < order_date &
+                               !is.na(workplace_int)) %>%
+    select(workplace_int) %>% 
+    as.matrix() %>% 
+    as.numeric() %>% 
+    cpt.mean(method='AMOC')
+    plot(cp_calc, cpt.col='blue', 
+       ylab = "Workplace Mobility Change from Baseline (%)",
+       xlab = "Days since February 15")
+    output$pre_cp <- renderText({paste("Pre Changepoint Mean: ",
+                                       round(param.est(cp_calc)$mean[1], 2))})
+    output$post_cp <- renderText({paste("Post Changepoint Mean:",
+                                        round(param.est(cp_calc)$mean[2]))})
+    
+})
+```
+
+
+## Interventions & COVID-19 Cases Curve
+Overview of our database
+
+## Before & During Interventions
+
+## During & After Interventions
+
+```{r}
+
+```
+## Rationale- NOAH 
+- Why we collected the attributes we did?
+- Variety of variables that could have influenced a later SAH order
+
+## Pop vs Intervention Date- NOAH
+
+## Political Party vs State Intervention Date- NOAH
+
+## Flattening the Curve
+
+## Future Work
+```{r}
+
+```
+
+
+
