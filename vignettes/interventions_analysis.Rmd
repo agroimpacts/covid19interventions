@@ -22,13 +22,13 @@ library(usethis)
 library(covid19interventions)
 
 # run if you don't have covid19clark
-devtools::install_github("agroimpacts/covid19clark")
+#devtools::install_github("agroimpacts/covid19clark")
 
 library(devtools)
 library(usethis)
 library(covid19interventions)
 
-devtools::install_github("agroimpacts/covid19clark")
+#devtools::install_github("agroimpacts/covid19clark")
 library(covid19clark)
 ```
 
@@ -50,7 +50,7 @@ head(us_cases_daily$county)
 
 <<<<<<< HEAD
 
-```{r}
+```{r, eval = FALSE}
 #------------------------------------------------------------------------------------------------------------
 # How many cases and deaths were recorded the date the intervention measures were put in place?
 library(dplyr)
@@ -117,29 +117,23 @@ state_during_df <- inner_join(state_during,df3, by = c("SAH_State_Date" = "date"
 #------------------------------------------------------------------------------------------------------------
 #State After
 state_after <- df1
-state_after$SAH_State_Date = state_before$SAH_State_Date + 42
+state_after$SAH_State_Date = state_before$SAH_State_Date + 28
 state_after_df <- inner_join(state_after,df3, by = c("SAH_State_Date" = "date",
                                     "admin1" = "state1")) %>% 
   group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
 
 #------------------------------------------------------------------------------------------------------------
 
-
 final_df1 <- cbind(state_during_df, cases_week_after = state_after_df$cases)
 final_df2 <- cbind(final_df1, cases_2week_after = state_after_df$cases)
 final_df3 <- cbind(final_df2, cases_4week_after = state_after_df$cases)
 final_df4 <- cbind(final_df3, cases_2day_before = state_before_df$cases)
-final_table <- final_df4
+county_intervention_cases <- final_df4
+usethis::use_data(county_intervention_cases, overwrite = FALSE)
+
 
 
 #------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
 
 # Get US map
 #usa <- map_data("state")
@@ -157,7 +151,7 @@ final_table <- final_df4
 #gg
 
 #-----------------------------------------------------------------------------------------------------------------------------
-devtools::install_github("wmurphyrd/fiftystater")
+#devtools::install_github("wmurphyrd/fiftystater")
 
 library(ggplot2)
 library(fiftystater)
@@ -181,7 +175,7 @@ p <- ggplot(stateaft, aes(map_id = admin1)) +
   scale_y_continuous(breaks = NULL) +
   labs(x = "", y = "") +
   theme(legend.position = "bottom", 
-        panel.background = element_blank())+ theme(legend.key.width = unit(5, "cm")) + ggtitle("Normalized State Case Occurence Four Weeks after SAH Intervention")
+        panel.background = element_blank())+ theme(legend.key.width = unit(5, "cm")) + ggtitle("Normalized State Case Occurence 4 Weeks After SAH Intervention")
 p
 
    
@@ -193,14 +187,7 @@ p
 #How many cases and deaths were recorded the date the intervention measures were put in place?
 
 #1.Loop through all counties in the list to find the dates and number of cases&deaths for before, during, and after interventions were put in place. 
-
-
-
 #2.Then do a plot where the date is on the x axis and the number of cases and deaths are on the y axis.
-
-
-
-
 #3.After plotting those two lines find the places that showed the highest and lowest drops due to the intervention or lack thereof.
 
 ```
