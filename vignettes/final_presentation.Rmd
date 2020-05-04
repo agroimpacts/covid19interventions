@@ -121,7 +121,11 @@ datatable(county_intervention_cases_sl)
 ![During](output/state_during_plot.PNG)
 
 ## After Interventions
-![After](/output/state_after_plot.PNG)
+![After](/output/state_1w_after.png)
+## After Interventions
+![After](/output/state_2w_after.png)
+## After Interventions
+![After](/output/state_4w_after.png)
 
 
 ## Rationale- NOAH 
