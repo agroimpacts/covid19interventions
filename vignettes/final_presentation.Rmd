@@ -34,10 +34,11 @@ data(df_joined)
 - Understand if the county-level intervention to minimize direct human contact affects the curve
 
 ## Methodology
-- We started by collecting data for all types of interventions at the county level
-- Focused on the two most and least populated counties in every state
-- The process took time and most counties did not
-- Google's Mobility dataset utilized to expedite the collection process by observing movement 
+- Initially collected data for all types of county-level interventions
+- Focused on the two least and most populated counties in every state
+- The process was slow- most counties did not have any interventions in place
+- In the interest of time, limited interventions to stay-at-home orders only
+- Google's Mobility dataset utilized to expedite the collection process by observing the change in movement at the county level
 
 ## Change in Mobility
 - Movement information released by Google to support data-driven decision making in managing COVID-19
