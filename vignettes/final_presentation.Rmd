@@ -20,7 +20,6 @@ library(changepoint)
 library(shinythemes)
 
 data(mobility)
-data(df_joined)
 ```
 
 ## Overview
@@ -111,13 +110,36 @@ Overview of our database
 
 ```
 ## Rationale- NOAH 
-- Why we collected the attributes we did?
-- Variety of variables that could have influenced a later SAH order
-
+-Covid-19 is a dynamic and easily spreadable virus. 
+- Policy for COVID-19 has been decided on by governors in particular
+- Expressing a Governor's political party will build overall trends in decision making for the US as a whole 
+- The population is one of the largest factors in a factor in a pandemic.
+      For example, New and NJ lead in terms of cases and are large population centers.(worldometers.info/coronavirus)
+-Cases are the backbone for understanding the spread of disease. 
+-Intervention types across the US were very different from Stay at home minors, to shelter in place
+  - Interventions also occurred across both March of 2020 and April 2020
+  
 ## Pop vs Intervention Date- NOAH
 
+
+
+
+-This chart shows the intervention date with the total population of the state. N/A for the party is for territory without a governor.  
+There is a clear difference in the political party's by the state for the state's intervention date. Democrats tend to be earlier by the republicans were later in March and early April.
+
+-This chart was created using ggplot
 ## Political Party vs State Intervention Date- NOAH
 
+
+
+
+-This chart shows the intervention type (policy type) with a political party. 
+-Overall it shows the bipartisan policy between states for a stay at home order. It is also interesting to see a lack of shelter in place order between the states. 
+-The chart shows the clear dominance geographically of the stay at home order.
+
+-Note this table leaves off 9 states that have no SAH order (of any type)
+
+-This chart was created using ggplot
 ## Flattening the Curve
 
 ## Future Work

@@ -1,0 +1,31 @@
+---
+title: "COVID-19 Interventions Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{interventions_analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+
+```r
+library(covid19interventions)
+# run if you don't have covid19clark
+# devtools::install_github("agroimpacts/covid19clark", build_vignettes = TRUE)
+library(covid19clark)
+```
+
+
+
+```r
+# data load
+# covid interventions by county
+data("county_interventions")
+# covid cases
+data("us_cases_daily")
+```
+
+
+
