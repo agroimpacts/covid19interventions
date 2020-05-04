@@ -16,7 +16,11 @@ library(covid19interventions)
 library(shiny)
 library(ggplot2)
 library(tidyverse)
+library(changepoint)
+library(shinythemes)
+
 data(mobility)
+data(df_joined)
 ```
 
 ## Overview
@@ -43,27 +47,29 @@ data(mobility)
 - Mean of workplace mobility calculated pre and post change point
 - Counties ranked based on mean change in workplace mobility post changepoint
 
-## Mobility by County
+## Change in Mobility by County
 ```{r, echo = FALSE}
 fluidPage(
     sidebarLayout(
           sidebarPanel(
             htmlOutput("state_selector"),
-            htmlOutput("county_selector"), width = 5),
-        mainPanel(
-            plotOutput("wpplot"), width = 7
-        )))
+            htmlOutput("county_selector"), width = "5"),
+           mainPanel(plotOutput("cpplot"),
+                     textOutput("pre_cp"),
+                     textOutput("post_cp"),
+                     width = 7)))
+        
 
 output$state_selector <- renderUI({
 selectInput(
   inputId = "state", 
   label = "State:",
-  choices = as.character(unique(mobility$sub_region_1)),
+  choices = as.character(unique(df_joined$sub_region_1)),
   selected = "Alabama")
   })
 
 output$county_selector <- renderUI({
-  available <- mobility[mobility$sub_region_1 == input$state, "sub_region_2"]
+  available <- df_joined[df_joined$sub_region_1 == input$state, "sub_region_2"]
   selectInput(
     inputId = "county", 
     label = "County:",
@@ -71,29 +77,50 @@ output$county_selector <- renderUI({
     selected = unique(available)[1])
 })
 
-output$wpplot <- renderPlot({
-mobility %>% 
-filter(sub_region_1 == input$state & sub_region_2==input$county) %>%
-select("date",
-      "workplace_int")%>%
-pivot_longer(names_to = "variable", values_to = "value", -date) %>% 
-        ggplot(aes_string(x = "date", y = "value")) +
-        geom_line() + theme(legend.position = "none") 
+
+  
+  output$cpplot <- renderPlot({
+    cp_calc <- df_joined %>% filter(sub_region_1 == input$state & 
+                               sub_region_2 == input$county &
+                               date < order_date &
+                               !is.na(workplace_int)) %>%
+    select(workplace_int) %>% 
+    as.matrix() %>% 
+    as.numeric() %>% 
+    cpt.mean(method='AMOC')
+    plot(cp_calc, cpt.col='blue', 
+       ylab = "Workplace Mobility Change from Baseline (%)",
+       xlab = "Days since February 15")
+    output$pre_cp <- renderText({paste("Pre Changepoint Mean: ",
+                                       round(param.est(cp_calc)$mean[1], 2))})
+    output$post_cp <- renderText({paste("Post Changepoint Mean:",
+                                        round(param.est(cp_calc)$mean[2]))})
+    
 })
 ```
 
 
 ## Interventions & COVID-19 Cases Curve
+Overview of our database
+
+## Before & During Interventions
+
+## During & After Interventions
+
 ```{r}
 
 ```
+## Rationale- NOAH 
+- Why we collected the attributes we did?
+- Variety of variables that could have influenced a later SAH order
 
-## Cases & Deaths before Intervention
-```{r}
+## Pop vs Intervention Date- NOAH
 
-```
+## Political Party vs State Intervention Date- NOAH
 
-## Findings
+## Flattening the Curve
+
+## Future Work
 ```{r}
 
 ```
