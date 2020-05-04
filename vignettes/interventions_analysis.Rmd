@@ -99,11 +99,10 @@ after_df <- inner_join(after,df2, by = c("SAH_County_Date" = "date",
 #------------------------------------------------------------------------------------------------------------
 #State Before
 state_before <- df1
-state_before$SAH_State_Date= state_before$SAH_State_Date - 2 
+state_before$SAH_State_Date= state_before$SAH_State_Date - 2
 
 state_before_df <- inner_join(state_before,df3, by = c("SAH_State_Date" = "date",
-                                    "admin1" = "state1")) %>% 
-  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+                                    "admin1" = "state1")) %>% mutate(case_pop = cases / pop)
 
 #------------------------------------------------------------------------------------------------------------
 #State During
@@ -111,16 +110,14 @@ state_during <- df1
 #state_before$SAH_State_Date= state_before$SAH_State_Date 
 
 state_during_df <- inner_join(state_during,df3, by = c("SAH_State_Date" = "date",
-                                    "admin1" = "state1")) %>% 
-  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+                                    "admin1" = "state1")) %>% mutate(case_pop = cases / pop)
 
 #------------------------------------------------------------------------------------------------------------
 #State After
 state_after <- df1
 state_after$SAH_State_Date = state_before$SAH_State_Date + 28
 state_after_df <- inner_join(state_after,df3, by = c("SAH_State_Date" = "date",
-                                    "admin1" = "state1")) %>% 
-  group_by(admin2_rep) %>% mutate(case_pop = cases / pop)
+                                    "admin1" = "state1")) %>% mutate(case_pop = cases / pop)
 
 #------------------------------------------------------------------------------------------------------------
 
@@ -129,7 +126,7 @@ final_df2 <- cbind(final_df1, cases_2week_after = state_after_df$cases)
 final_df3 <- cbind(final_df2, cases_4week_after = state_after_df$cases)
 final_df4 <- cbind(final_df3, cases_2day_before = state_before_df$cases)
 county_intervention_cases <- final_df4
-usethis::use_data(county_intervention_cases, overwrite = FALSE)
+usethis::use_data(county_intervention_cases, overwrite = TRUE)
 
 
 

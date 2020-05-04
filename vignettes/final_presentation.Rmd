@@ -107,9 +107,10 @@ output$county_selector <- renderUI({
 - Data Table
 ```{r}
 
-county_interventions_cases_sl <- county_intervention_cases %>% select(admin1, SAH_State_Date, cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after)
-                                     
-datatable(county_intervention_cases_sl)
+county_interventions_cases_sl <- county_intervention_cases %>% select(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after) %>% distinct(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after)
+
+#as.data.frame(county_interventions_cases_sl)                      
+datatable(county_interventions_cases_sl)
 
 ```
 
@@ -117,15 +118,17 @@ datatable(county_intervention_cases_sl)
 ## Before Interventions
 ![Before](output/state_before_plot.PNG)
 
-## During & After Interventions
+## During Interventions
 ![During](output/state_during_plot.PNG)
 
-## After Interventions
-![After](/output/state_1w_after.png)
-## After Interventions
-![After](/output/state_2w_after.png)
-## After Interventions
-![After](/output/state_4w_after.png)
+## 1 Week After Interventions
+![After](output/state_1w_after.png)
+
+## 2 Weeks After Interventions
+![After](output/state_2w_after.png)
+
+## 4 Weeks After Interventions
+![After](output/state_4w_after.png)
 
 
 ## Rationale- NOAH 
