@@ -44,7 +44,7 @@ The first step of the new phase was to create a database that housed the amount 
 Next, visualizations were created to reveal the relationships between population, date, and political party. This required a join between multiple datasets between various sources. Additionally, the data were standardized to remove blank values and then displayed using ggplot.
 
 ```{r, fig.align='center', out.width = "600px", echo=FALSE}
-knitr::include_graphics("output/0000b4.PNG")
+knitr::include_graphics("output/000036.png")
 ```
 
 ```{r, fig.align='center', out.width = "600px", echo=FALSE}
@@ -55,7 +55,7 @@ knitr::include_graphics("output/0000b4.PNG")
 For our final study, we investigated whether SAH orders indeed “flattened” the curve.
 
 - First we assume the rise in cases follows the exponential function:
-<center> y = A$e^{kt}$ &rarr; ln(y) = kt + ln(A) </center>\
+<center> y = A$e^{kt}$ &rarr; ln(y) = kt + ln(A) </center>
 <center> y = cases </center>
 <center> A = initial value </center>
 <center> k = rate of growth </center>
@@ -68,7 +68,7 @@ knitr::include_graphics("output/example5.PNG")
 - Next, we “linearized” the exponential rise of cases with natural log. This graph plots the natural log of cases on the y-axis by time on the x-axis. The slope of this “line” is therefore k, the rate of cases growth. The natural log curve was smoothed before calculating slope values between each pair of points.
 
 <center> ln(y) = kt + ln(A) </center>
-
+\
 ```{r, fig.align='center', out.width = "600px", echo=FALSE}
 knitr::include_graphics("output/example6.PNG")
 ```
@@ -93,36 +93,34 @@ knitr::include_graphics("output/example4.PNG")
 
 # Results
 ## Mobility & The Change Detection Analysis
-The mobility trends varied by county, however, there is an overall decline in mobility for all counties. This analysis focused on workplace mobility due to the smallest amount of missing data. We used an approximation method to interpolate any missing data. A higher decline is observed in counties that enacted a stay-at-home order or had a spike in the number of cases. For example, the changepoint for Los Angeles County, CA, is identified on March 16th. Before March 16th, there was a 0.43% drop in the workplace population. A 28% drop was seen between March 17th and March 19th when the state of California enforced a stay at home order. In comparison, San Francisco’s changepoint is observed on March 17th. Before this day, the mean workplace population was -6.97%, and between March 17th and March 19th, there is a -66% drop.
+The mobility trends varied by county, however, there is an overall decline in mobility for all counties. This analysis focused on workplace mobility due to the smallest amount of missing data. We used an approximation method to interpolate any missing data. A higher decline is observed in counties that enacted a stay-at-home order or had a spike in the number of cases. For example, in the plot below, the changepoint for Los Angeles County, CA, is identified on March 16th. Before March 16th, there was a 0.43% drop in the workplace population. A 28% drop was seen between March 17th and March 19th when the state of California enforced a stay at home order. In comparison, San Francisco’s changepoint is observed on March 17th. Before this day, the mean workplace population was -6.97%, and between March 17th and March 19th, there is a -66% drop.
 
-```{r, fig.align='center', out.width = "600px", echo=FALSE}
-# insert priyanka's mobility plots here
+```{r, fig.align='center', out.width = "400px", echo=FALSE}
+knitr::include_graphics(c("output/la_changepoint.PNG", "output/sf_changepoint.PNG"))
 ```
+<center>
+_Changepoint for Los Angeles County, CA (Top) & San Francisco County, CA (Bottom)_
+</center>
 
 ## Interventions & Cases
 The Stay at Home Interventions at a state level revealed that the magnitude of new cases per population of state began to show a flattening effect of the curve for some areas over time. This was especially the case for more rural areas in comparison with densely populated areas, which take a longer period (2-4 weeks) to begin to show a trend in consistent flattening.
 
-- Before Interventions
 ```{r, fig.align='center', out.width = "600px", echo=FALSE}
 knitr::include_graphics("output/state_before_plot.PNG")
 ```
 
-- During Interventions
 ```{r, fig.align='center', out.width = "600px", echo=FALSE}
 knitr::include_graphics("output/state_during_plot.PNG")
 ```
 
-- 1 Week After Interventions
 ```{r, fig.align='center', out.width = "600px", echo=FALSE}
 knitr::include_graphics("output/state_1w_after.PNG")
 ```
 
-- 2 Weeks After Interventions
 ```{r, fig.align='center', out.width = "600px", echo=FALSE}
 knitr::include_graphics("output/state_2w_after.PNG")
 ```
 
-- 4 Weeks After Interventions
 ```{r, fig.align='center', out.width = "600px", echo=FALSE}
 knitr::include_graphics("output/state_4w_after.PNG")
 ```
