@@ -1,14 +1,8 @@
 ---
-title: "COVID-19 Interventions Analysis - Priscilla Ahn"
-output: 
-  html_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
-vignette: >
-  %\VignetteIndexEntry{interventions_analysis_priscilla}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+title: "Loop"
+author: "Priscilla Ahn"
+date: "5/4/2020"
+output: html_document
 ---
 
 ```{r setup, include = FALSE}
@@ -51,7 +45,6 @@ library(devtools)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(gridExtra)
 library(lubridate)
 library(strucchange)
 library(segmented)
@@ -97,184 +90,14 @@ firstup <- function(x) {
 }
 ```
 
-# Generate plot
-- State level
-```{r, warning=FALSE, message=FALSE}
-# vector of state acronyms to loop
-statename <- state_join %>% distinct(state1) %>% select(state1)
-
-# temp before I figure out looping
-statename <- statename %>% slice(2)
-statename
-
-# isolate variables of interest
-state_tb <- state_join %>% select(state1, date, cases, order_date) %>% 
-  filter(state1 == statename[[1]])
-
-# convert date to julian day
-state_tb$jday <- yday(state_tb$date)
-
-# calculate k value in y = Ae^(kx)
-# normalize cases curve by exponential func using natural log
-state_tb$cases_log <- log(state_tb$cases)
-state_tb$k <- NA
-state_tb$k[2:length(state_tb$k)] <- 
-  diff(state_tb$cases_log)/diff(state_tb$jday)
-state_tb <- state_tb %>% filter_all(all_vars(!is.infinite(.)))
-
-# calculate fitted k value
-## remove rows with any na values
-state_tb_fit <- state_tb %>% drop_na()
-
-## smooth cases_log
-lw <- loess(cases_log ~ jday, state_tb_fit)
-state_tb_fit$cases_logfit <- lw$fitted
-
-## calculate k values to smoothed cases_log curve
-state_tb_fit$kfit <- NA
-state_tb_fit$kfit[2:length(state_tb_fit$kfit)] <- 
-  diff(state_tb_fit$cases_logfit)/diff(state_tb_fit$jday)
-
-# order_date
-orderdate <- unique(state_tb$order_date)
-orderjday <- yday(orderdate)
-```
-
-# Plot
-```{r, fig.width=6, fig.height=4, fig.align = "center"}
-p1 <- ggplot(state_tb, aes(x=date, y=cases)) +
-  geom_point() +
-  scale_x_date(date_breaks = "4 day", labels=date_format("%b-%d")) +
-  labs(title = "COVID-19 Cases",
-     subtitle = firstup(statename[[1]]),
-     x = "Date", y = "Cases") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(legend.title = element_blank())
-p1
-
-p2 <- ggplot(state_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
-  geom_line(aes(x=date, y=cases_logfit), color = "#CD5C5C", size=1) +
-  scale_x_date(date_breaks = "4 day", labels=date_format("%b-%d")) +
-  labs(title = "COVID-19 Cases in Natural Log Scale",
-     subtitle = firstup(statename[[1]]),
-     x = "Date", y = "Cases (log scale)") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(legend.title = element_blank())
-p2
-```
-
-
-# Locate breakpoints in cases data
-```{r, warning=FALSE, message=FALSE}
-# pull jday and kfit as numeric vectors
-x <- state_tb_fit %>% pull(jday)
-y <- state_tb_fit %>% pull(kfit)
-
-# use intervention_breakpts function to find breakpoints within the data
-output <- intervention_breakpts(x, y)
-```
-
-## Investigate outputs of `intervention_breakpts()`
-```{r, warning=FALSE, message=FALSE}
-## output 1: exported as a tibble
-t <- output[[1]]
-
-## output 2: linear fit to curve
-my.lm <- output[[2]][[1]]
-summary(my.lm)
-
-## output 3: segments
-my.seg <- output[[2]][[2]]
-slope(my.seg)
-summary(my.seg)
-
-## output 4: modeled piecewise linear function
-my.model <- output[[2]][[3]]
-
-## output 5: estimated breakpoints in julian days
-my.lines <- round(unname(output[[2]][[4]]))
-```
-
-## Plot outputs
-```{r, fig.width=6, fig.height=4, fig.align = "center"}
-# convert julian day to date
-t_join <- t %>% left_join(my.model, by = c("jdates")) %>% 
-  rename("k"="rate.x", "klinear"="rate.y")
-t_join$date <- as.Date(t_join$jdates, origin = '2019-12-31')
-my.lines_date <- as.Date(my.lines, origin = '2019-12-31')
-
-# label vertical lines
-vline1 <- data.frame(date = orderdate,
-                    label = "SAH")
-vline2 <- data.frame(date = my.lines_date,
-                     label = "breakpoints")
-
-# plot
-p3 <- ggplot(t_join, aes(x=date, y=k)) + geom_point() +
-  geom_line(aes(x=date, y=klinear)) +
-  geom_vline(aes(xintercept=date, colour=label), data=vline1,
-             linetype="dashed", size=1) +
-  geom_vline(aes(xintercept=date, colour=label), data=vline2, size=1) +
-  scale_x_date(date_breaks = "2 day", labels=date_format("%b-%d")) +
-  scale_colour_manual(name = "Dates", values = c("breakpoints" = "grey",
-                                               "SAH" = "#57B1C5")) +
-  labs(title = "Breakpoints in k Curve",
-     subtitle = firstup(statename[[1]]),
-     caption = paste0("SAH Order Date = ", orderdate),
-     x = "Date", y = "k") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  theme(legend.title = element_blank())
-p3
-```
-
-# Calculate lag
-```{r, warning=FALSE, message=FALSE}
-flatpoint_jday <- my.lines[length(my.lines)]
-flatpoint_date <- as.Date(flatpoint_jday, origin = '2019-12-31')
-lagdiff <- flatpoint_jday - orderjday
-```
-
-# Plot
-```{r}
-# plot
-df <- state_tb_fit %>% as.data.frame()
-if (length(my.lines_date) == 1) {
-  df_vline <- data.frame(dates = c(my.lines_date, flatpoint_date, orderdate),
-                       labels = c("breakpoints", "flatten", "SAH"))
-} else {
-  df_vline <- data.frame(dates = c(my.lines_date[1:length(my.lines_date)-1],
-                                   flatpoint_date, orderdate),
-                         labels = c("breakpoints", "flatten", "SAH"))
-  }
-
-p4 <- ggplot(df, aes(x=date, y=cases_log)) + geom_point() +
-  geom_line(aes(x=date, y=cases_logfit)) +
-  geom_vline(aes(xintercept = dates, colour = labels), data = df_vline,
-             linetype = 1, size = 1, show.legend = T) +
-  scale_colour_manual(name = "Dates", values = c("breakpoints" = "grey",
-                                                 "flatten" = "#E88147",
-                                                 "SAH" = "#57B1C5")) +
-  scale_x_date(date_breaks = "2 day", labels=date_format("%b-%d")) +
-  labs(title = "Impact of SAH Order on Curve",
-       subtitle = firstup(statename[[1]]),
-       caption = paste0("Lag = ", lagdiff, " days"),
-       x = "Date", y = "Cases (log scale)") +
-  theme(axis.text.x = element_text(angle = 90))
-p4
-```
-
-Together
-```{r}
-grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2)
-```
-
 - County level
 ```{r, warning=FALSE, message=FALSE}
 # vector of state acronyms to loop
-countyname <- county_join %>% distinct(admin1, admin2)
+countyname <- county_join %>% distinct(admin1, admin2) %>%
+  arrange(admin1, admin2)
 
 # temp before I figure out looping
-countyname <- countyname %>% slice(1)
+countyname <- countyname %>% slice(68)
 countyname
 
 # isolate variables of interest
@@ -407,7 +230,7 @@ p4 <- ggplot(county_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
                                                  "flatten" = "#E88147",
                                                  "SAH" = "#57B1C5")) +
   scale_x_date(date_breaks = "2 day", labels=date_format("%b-%d")) +
-  labs(title = "Did SAH order flatten the curve?",
+  labs(title = "Impact of SAH Order on Curve",
        subtitle = paste0(firstup(countyname[[2]]), ", ",
                          firstup(countyname[[1]])),
        caption = paste0("Lag = ", lagdiff, " days"),
@@ -417,14 +240,3 @@ p4
 
 grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2)
 ```
-
-# elbow point
-```{r, warning=FALSE, message=FALSE}
-# elbowPoint(jdates, k)
-```
-
-
-
-
-
-
