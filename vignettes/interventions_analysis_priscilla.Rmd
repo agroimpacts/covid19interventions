@@ -58,11 +58,6 @@ library(segmented)
 library(scales)
 ```
 
-```{r}
-sah_count <- sah_join %>% group_by(state, order_type, politicalparty) %>% 
-  summarize(count = n_distinct(order_date))
-```
-
 ## Data prep
 Join and assemble data so we have...
 ```{r, warning=FALSE, message=FALSE}
