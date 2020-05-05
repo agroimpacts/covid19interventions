@@ -1,6 +1,6 @@
 ---
 title: "COVID-19 U.S. Interventions: Final Paper"
-author: "Priscilla Ahn"
+author: "Priscilla Ahn, Priyanka Verma, Noah Berkowitz, Maxwell Enger"
 date: "5/4/2020"
 output:
   html_document:
@@ -149,7 +149,9 @@ There are many opportunities for future work in our analysis. Firstly, it is imp
 # References
 Alexander, Diane and Karger, Ezra, Do Stay-at-Home Orders Cause People to Stay at Home? Effects of Stay-at-Home Orders on Consumer Behavior (April 18, 2020). FRB of Chicago Working Paper No. WP-2020-12. Available at [SSRN](https://ssrn.com/abstract=3583625) or [HTTP](http://dx.doi.org/10.2139/ssrn.3583625)
 
-
+<center>
+[Back to top](#introduction)
+</center>
 
 
 
