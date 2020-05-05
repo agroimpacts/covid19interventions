@@ -58,11 +58,6 @@ library(segmented)
 library(scales)
 ```
 
-```{r}
-sah_count <- sah_join %>% group_by(state, order_type, politicalparty) %>% 
-  summarize(count = n_distinct(order_date))
-```
-
 ## Data prep
 Join and assemble data so we have...
 ```{r, warning=FALSE, message=FALSE}
@@ -152,7 +147,7 @@ p1 <- ggplot(state_tb, aes(x=date, y=cases)) +
   scale_x_date(date_breaks = "4 day", labels=date_format("%b-%d")) +
   labs(title = "COVID-19 Cases",
      subtitle = firstup(statename[[1]]),
-     x = "Date", y = "Cumulative Cases") +
+     x = "Date", y = "Cases") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.title = element_blank())
 p1
@@ -162,7 +157,7 @@ p2 <- ggplot(state_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
   scale_x_date(date_breaks = "4 day", labels=date_format("%b-%d")) +
   labs(title = "COVID-19 Cases in Natural Log Scale",
      subtitle = firstup(statename[[1]]),
-     x = "Date", y = "Cumulative Cases (log scale)") +
+     x = "Date", y = "Cases (log scale)") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.title = element_blank())
 p2
@@ -260,10 +255,10 @@ p4 <- ggplot(df, aes(x=date, y=cases_log)) + geom_point() +
                                                  "flatten" = "#E88147",
                                                  "SAH" = "#57B1C5")) +
   scale_x_date(date_breaks = "2 day", labels=date_format("%b-%d")) +
-  labs(title = "COVID-19 Cases over Time",
+  labs(title = "Impact of SAH Order on Curve",
        subtitle = firstup(statename[[1]]),
        caption = paste0("Lag = ", lagdiff, " days"),
-       x = "Date", y = "ln(Cumulative Cases)") +
+       x = "Date", y = "Cases (log scale)") +
   theme(axis.text.x = element_text(angle = 90))
 p4
 ```
@@ -344,7 +339,7 @@ p1 <- ggplot(county_tb, aes(x=date, y=cases)) +
   labs(title = "COVID-19 Cases",
      subtitle = paste0(firstup(countyname[[2]]), ", ",
                        firstup(countyname[[1]])),
-     x = "Date", y = "Cumulative Cases") +
+     x = "Date", y = "Cases") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.title = element_blank())
 p1
@@ -357,7 +352,7 @@ p2 <- ggplot(county_tb_fit, aes(x=date, y=cases_log)) +
   labs(title = "COVID-19 Cases in Natural Log Scale",
      subtitle = paste0(firstup(countyname[[2]]), ", ",
                        firstup(countyname[[1]])),
-     x = "Date", y = "Cumulative Cases (log scale)") +
+     x = "Date", y = "Cases (log scale)") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.title = element_blank())
 p2
@@ -412,11 +407,11 @@ p4 <- ggplot(county_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
                                                  "flatten" = "#E88147",
                                                  "SAH" = "#57B1C5")) +
   scale_x_date(date_breaks = "2 day", labels=date_format("%b-%d")) +
-  labs(title = "COVID-19 Cases over Time",
+  labs(title = "Did SAH order flatten the curve?",
        subtitle = paste0(firstup(countyname[[2]]), ", ",
                          firstup(countyname[[1]])),
        caption = paste0("Lag = ", lagdiff, " days"),
-       x = "Date", y = "ln(Cumulative Cases)") +
+       x = "Date", y = "Cases (log scale)") +
   theme(axis.text.x = element_text(angle = 90))
 p4
 
