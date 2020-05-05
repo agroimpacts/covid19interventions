@@ -1,8 +1,8 @@
 ---
-title: "Web Scraoing in R"
+title: "Web Scraping in R"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{webscraping}
+  %\VignetteIndexEntry{Web Scraping in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -2,7 +2,7 @@
 title: "Google Mobility Data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{mobility_google}
+  %\VignetteIndexEntry{Google Mobility Data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
