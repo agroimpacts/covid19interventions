@@ -30,7 +30,7 @@ library(zoo)
 - Identify change point before state stay at home order is implemented
 - Calculate mean drop in workplace pop after change point
 - If a big drop before state SAH -> there may be a county level order
-```{r, fig.align='center', fig.width=8, fig.height=5, message=FALSE}
+```{r, fig.align='center', fig.width=8, fig.height=5, message=FALSE, eval = FALSE}
 # load sah state dates from webscraping
 # data("master")
 
@@ -52,7 +52,7 @@ df_joined <- df_joined %>%
 ```
 
 ## Change Point Detection
-```{r, warning=FALSE, include=TRUE, message=FALSE, results=FALSE}
+```{r, warning=FALSE, include=TRUE, message=FALSE, results=FALSE, eval = FALSE}
 # select unique state and county in dataframe
 state_county <- df_joined %>% select(sub_region_1,sub_region_2) %>% distinct() 
 
@@ -98,7 +98,7 @@ counties_ranks <- county_wp_mean %>%
    mutate(rank = dense_rank(wp_low_mean))
 ```
 
-```{r}
+```{r, eval = FALSE}
 datatable(counties_ranks)
 ```
 
@@ -120,7 +120,7 @@ plot(v1.man,cpt.col='blue')
 param.est(v1.man)$mean
 ```
 
-```{r, fig.align='center', fig.width=8, fig.height=5}
+```{r, fig.align='center', fig.width=8, fig.height=5, eval = FALSE}
 # mobility change in County by type
 df_joined %>% 
   filter(sub_region_1 == "California" & sub_region_2 == "San Francisco County") %>%
