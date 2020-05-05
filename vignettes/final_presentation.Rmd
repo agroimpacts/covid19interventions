@@ -9,7 +9,7 @@ output:
     widescreen: yes
 runtime: shiny
 vignette: >
-  %\VignetteIndexEntry{Covid-19 U.S. Interventions}
+  %\VignetteIndexEntry{COVID-19 U.S. Interventions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
