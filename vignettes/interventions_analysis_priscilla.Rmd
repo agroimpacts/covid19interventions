@@ -118,7 +118,7 @@ head(state_join)
 head(county_join)
 ```
 
-# State-Level
+# State-Level Analysis
 ## Select the state of interest
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # vector of state acronyms to loop
@@ -294,13 +294,13 @@ p4
 grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2)
 ```
 
-# County level
+# County level Analysis
 This replicates the same methodology as above but at the county-level
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # vector of state acronyms to loop
 countyname <- county_join %>% distinct(admin1, admin2)
 
-# temp
+# placeholder because loop hasn't been figured out yet
 countyname <- countyname %>% slice(1)
 countyname
 
@@ -313,14 +313,13 @@ county_tb <- county_join %>%
 county_tb$jday <- yday(county_tb$date)
 
 # calculate k value in y = Ae^(kx)
-# normalize cases curve by exponential func using natural log
+## linearize cases curve using natural log
 county_tb$cases_log <- log(county_tb$cases)
 county_tb$k <- NA
 county_tb$k[2:length(county_tb$k)] <- 
   diff(county_tb$cases_log)/diff(county_tb$jday)
 county_tb <- county_tb %>% filter_all(all_vars(!is.infinite(.)))
 
-# calculate fitted k value
 ## remove rows with any na values
 county_tb_fit <- county_tb %>% drop_na()
 
@@ -328,12 +327,12 @@ county_tb_fit <- county_tb %>% drop_na()
 lw <- loess(cases_log ~ jday, county_tb_fit)
 county_tb_fit$cases_logfit <- lw$fitted
 
-## calculate k values to smoothed cases_log curve
+## calculate k values from smoothed cases_log curve
 county_tb_fit$kfit <- NA
 county_tb_fit$kfit[2:length(county_tb_fit$kfit)] <- 
   diff(county_tb_fit$cases_logfit)/diff(county_tb_fit$jday)
 
-# order_date
+# grab SAH order date
 orderdate <- unique(county_tb$SAH_County_Date)
 orderjday <- yday(orderdate)
 
@@ -344,7 +343,7 @@ y <- county_tb_fit %>% pull(kfit)
 # use intervention_breakpts function to find breakpoints within the data
 output <- intervention_breakpts(x, y)
 
-## outputs
+# outputs
 t <- output[[1]]
 my.lm <- output[[2]][[1]]
 summary(my.lm)
@@ -358,7 +357,10 @@ my.lines <- round(unname(output[[2]][[4]]))
 flatpoint_jday <- my.lines[length(my.lines)]
 flatpoint_date <- as.Date(flatpoint_jday, origin = '2019-12-31')
 lagdiff <- flatpoint_jday - orderjday
+```
 
+## Plots
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # plot 1
 p1 <- ggplot(county_tb, aes(x=date, y=cases)) +
   geom_point() +
