@@ -8,7 +8,12 @@ output:
     smaller: yes
     widescreen: yes
 runtime: shiny
+vignette: >
+  %\VignetteIndexEntry{Covid-19 U.S. Interventions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(covid19interventions)
