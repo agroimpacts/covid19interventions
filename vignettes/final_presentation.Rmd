@@ -1,17 +1,14 @@
 ---
-title: "COVID-19 Spatial Interventions Database"
+title: "COVID-19 U.S. Interventions"
 author: "Priyanka Verma, Priscilla Ahn, Maxwell Enger, Noah Berkowitz"
 date: "5/2/2020"
 output: 
   ioslides_presentation: 
     highlight: null
-    incremental: yes
     smaller: yes
     widescreen: yes
 runtime: shiny
 ---
-![](output/covid.jpg)
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(covid19interventions)
@@ -35,7 +32,6 @@ data(df_joined)
 - COVID-19 is an infectious and easily communicable virus
 - The U.S. confirmed its first case of COVID-19 on _Jan. 21, 2020_
 - On _Feb. 26, 2020_, the first suspected case of a community spread in the U.S. reported
-- Population density is one of the biggest in a pandemic
 - Local government bodies were first to enforce stay-at-home orders to prevent the spread of COVID-19 before statewide measures implemented
 
 
@@ -80,7 +76,7 @@ selectInput(
   inputId = "state", 
   label = "State:",
   choices = as.character(unique(df_joined$sub_region_1)),
-  selected = "Alabama")
+  selected = "California")
   })
 
 output$county_selector <- renderUI({
@@ -89,10 +85,8 @@ output$county_selector <- renderUI({
     inputId = "county", 
     label = "County:",
     choices = unique(available),
-    selected = unique(available)[1])
+    selected = "Los Angeles County")
 })
-
-
   
   output$cpplot <- renderPlot({
     cp_calc <- df_joined %>% filter(sub_region_1 == input$state & 
@@ -157,6 +151,7 @@ knitr::include_graphics("output/state_4w_after.PNG")
 ```
 
 ## Rationale 
+- Population density is one of the biggest factors in a pandemic
 - Policy for COVID-19 has been decided on by governors in particular
 - Expressing a Governor's political party will build overall trends in decision making for the US as a whole 
 - Intervention types across the US were very different from Stay at home minors, to shelter in place
@@ -166,7 +161,6 @@ knitr::include_graphics("output/state_4w_after.PNG")
 - This chart shows the intervention date with the total population of the state. N/A for the party is for territory without a governor
 - There is a clear difference in the political party's by the state for the state's intervention date
 - Democrats tend to be earlier by the republicans were later in March and early April.
-
 
 ```{r, out.width = "600px", fig.align='center'}
 knitr::include_graphics("output/000036.png")
@@ -196,16 +190,16 @@ knitr::include_graphics("output/0000b4.png")
   4. Locate breakpoints in k curve to find dates of greates slope change
   5. Calculate the "lag" between the SAH order date and the last breakpoint
 
-## Florida State
+## Alaksa State
 
 ```{r, out.width = "700px", fig.align='center'}
-knitr::include_graphics("output/example1.png")
+knitr::include_graphics("output/example3.png")
 ```
 
-## Orange County, Florida
+## San Diego County, California
 
 ```{r, out.width = "700px", fig.align='center'}
-knitr::include_graphics("output/example2.png")
+knitr::include_graphics("output/example4.png")
 ```
 
 ## Future Work
