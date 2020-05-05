@@ -18,8 +18,29 @@ knitr::opts_chunk$set(
 )
 ```
 
-### Load data from `covid19interventions` & `covid19clark`
-```{r, warning=FALSE, message=FALSE}
+### Introduction
+Q. Do stay-at-home measures impact (flatten) the curve?
+This R script seeks to locate the point in which COVID-19 cases begins to flatten
+at the state- and county- level.
+
+### Methodology
+  1. "Linearize" exponential rise of cases using natural log\
+  \
+  <center> y = A$e^{kt}$ &rarr; ln(y) = kt + ln(A) </center>
+  \
+  2. Smooth natural log scale graph
+  3. Calculate slope k between all the datepoints
+  4. Locate breakpoints in k curve to find dates of greates slope change
+  5. Calculate the "lag" between the SAH order date and the last breakpoint
+
+### Data
+This analysis requires cases data from the `covid19clark` package,
+county-level data from our `covid19interventions` package, and state-level data
+scraped from NYT, `sah`.
+
+---
+### Load data
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # data load
 library(covid19interventions)
 # run if you don't have covid19clark
@@ -33,8 +54,8 @@ data("us_cases_daily")
 data("sah")
 ```
 
-### Sample
-```{r, warning=FALSE, message=FALSE}
+### Sample data
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # interventions
 head(county_interventions)
 # covid cases by county
@@ -46,7 +67,7 @@ head(sah)
 ---
 
 ## Load packages
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 library(devtools)
 library(dplyr)
 library(tidyr)
@@ -59,8 +80,8 @@ library(scales)
 ```
 
 ## Data prep
-Join and assemble data so we have...
-```{r, warning=FALSE, message=FALSE}
+Cases need to be joined to state-level and county-level data
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 us_state <- us_cases_daily$state
 us_county <- us_cases_daily$county
 
@@ -86,25 +107,25 @@ county_join <- county_interventions %>%
 county_join$SAH_County_Date <- coalesce(county_join$SAH_County_Date,
                                         county_join$SAH_State_Date)
 
-# sample
-head(state_join)
-head(county_join)
-
-# function to raise case when needed
+# function to raise case if needed
 firstup <- function(x) {
   substr(x, 1, 1) <- toupper(substr(x, 1, 1))
   x
 }
+
+# sample
+head(state_join)
+head(county_join)
 ```
 
-# Generate plot
-- State level
-```{r, warning=FALSE, message=FALSE}
+# State-Level
+Select the state of interest
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # vector of state acronyms to loop
 statename <- state_join %>% distinct(state1) %>% select(state1)
 
-# temp before I figure out looping
-statename <- statename %>% slice(2)
+# placeholder 
+statename <- statename %>% slice(1)
 statename
 
 # isolate variables of interest
@@ -113,7 +134,11 @@ state_tb <- state_join %>% select(state1, date, cases, order_date) %>%
 
 # convert date to julian day
 state_tb$jday <- yday(state_tb$date)
+```
 
+
+## Calculate k
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # calculate k value in y = Ae^(kx)
 # normalize cases curve by exponential func using natural log
 state_tb$cases_log <- log(state_tb$cases)
@@ -165,7 +190,7 @@ p2
 
 
 # Locate breakpoints in cases data
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # pull jday and kfit as numeric vectors
 x <- state_tb_fit %>% pull(jday)
 y <- state_tb_fit %>% pull(kfit)
@@ -175,7 +200,7 @@ output <- intervention_breakpts(x, y)
 ```
 
 ## Investigate outputs of `intervention_breakpts()`
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 ## output 1: exported as a tibble
 t <- output[[1]]
 
@@ -228,14 +253,14 @@ p3
 ```
 
 # Calculate lag
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 flatpoint_jday <- my.lines[length(my.lines)]
 flatpoint_date <- as.Date(flatpoint_jday, origin = '2019-12-31')
 lagdiff <- flatpoint_jday - orderjday
 ```
 
 # Plot
-```{r}
+```{r, fig.width=6, fig.height=4, fig.align = "center"}
 # plot
 df <- state_tb_fit %>% as.data.frame()
 if (length(my.lines_date) == 1) {
@@ -264,12 +289,12 @@ p4
 ```
 
 Together
-```{r}
+```{r, fig.width=6, fig.height=4, fig.align = "center"}
 grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2)
 ```
 
 - County level
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # vector of state acronyms to loop
 countyname <- county_join %>% distinct(admin1, admin2)
 
