@@ -8,6 +8,9 @@ output:
     smaller: yes
     widescreen: yes
 runtime: shiny
+vignette: >
+  %\VignetteIndexEntry{final_presentation}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
