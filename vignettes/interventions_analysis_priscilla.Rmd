@@ -119,12 +119,12 @@ head(county_join)
 ```
 
 # State-Level
-Select the state of interest
+## Select the state of interest
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # vector of state acronyms to loop
 statename <- state_join %>% distinct(state1) %>% select(state1)
 
-# placeholder 
+# placeholder because loop hasn't been figured out yet
 statename <- statename %>% slice(1)
 statename
 
@@ -138,35 +138,34 @@ state_tb$jday <- yday(state_tb$date)
 
 
 ## Calculate k
+Calculate k value in y = A$e^{kt}$
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
-# calculate k value in y = Ae^(kx)
-# normalize cases curve by exponential func using natural log
+# linearize cases curve using natural log
 state_tb$cases_log <- log(state_tb$cases)
 state_tb$k <- NA
 state_tb$k[2:length(state_tb$k)] <- 
   diff(state_tb$cases_log)/diff(state_tb$jday)
 state_tb <- state_tb %>% filter_all(all_vars(!is.infinite(.)))
 
-# calculate fitted k value
-## remove rows with any na values
+# remove rows with any na values
 state_tb_fit <- state_tb %>% drop_na()
 
-## smooth cases_log
+# smooth cases_log curve
 lw <- loess(cases_log ~ jday, state_tb_fit)
 state_tb_fit$cases_logfit <- lw$fitted
 
-## calculate k values to smoothed cases_log curve
+## calculate k values from smoothed cases_log curve
 state_tb_fit$kfit <- NA
 state_tb_fit$kfit[2:length(state_tb_fit$kfit)] <- 
   diff(state_tb_fit$cases_logfit)/diff(state_tb_fit$jday)
 
-# order_date
+# grab SAH order date
 orderdate <- unique(state_tb$order_date)
 orderjday <- yday(orderdate)
 ```
 
-# Plot
-```{r, fig.width=6, fig.height=4, fig.align = "center"}
+### Plot 1
+```{r, fig.width=6, fig.height=4, fig.align = "center", eval=FALSE}
 p1 <- ggplot(state_tb, aes(x=date, y=cases)) +
   geom_point() +
   scale_x_date(date_breaks = "4 day", labels=date_format("%b-%d")) +
@@ -176,7 +175,10 @@ p1 <- ggplot(state_tb, aes(x=date, y=cases)) +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.title = element_blank())
 p1
+```
 
+### Plot 2
+```{r, fig.width=6, fig.height=4, fig.align = "center", eval=FALSE}
 p2 <- ggplot(state_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
   geom_line(aes(x=date, y=cases_logfit), color = "#CD5C5C", size=1) +
   scale_x_date(date_breaks = "4 day", labels=date_format("%b-%d")) +
@@ -188,8 +190,7 @@ p2 <- ggplot(state_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
 p2
 ```
 
-
-# Locate breakpoints in cases data
+## Locate breakpoints in cases data
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # pull jday and kfit as numeric vectors
 x <- state_tb_fit %>% pull(jday)
@@ -199,7 +200,7 @@ y <- state_tb_fit %>% pull(kfit)
 output <- intervention_breakpts(x, y)
 ```
 
-## Investigate outputs of `intervention_breakpts()`
+## Investigate outputs of `intervention_breakpts()` function
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
 ## output 1: exported as a tibble
 t <- output[[1]]
@@ -220,8 +221,8 @@ my.model <- output[[2]][[3]]
 my.lines <- round(unname(output[[2]][[4]]))
 ```
 
-## Plot outputs
-```{r, fig.width=6, fig.height=4, fig.align = "center"}
+### Plot 3
+```{r, fig.width=6, fig.height=4, fig.align = "center", eval=FALSE}
 # convert julian day to date
 t_join <- t %>% left_join(my.model, by = c("jdates")) %>% 
   rename("k"="rate.x", "klinear"="rate.y")
@@ -252,15 +253,15 @@ p3 <- ggplot(t_join, aes(x=date, y=k)) + geom_point() +
 p3
 ```
 
-# Calculate lag
+## Calculate lag
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
 flatpoint_jday <- my.lines[length(my.lines)]
 flatpoint_date <- as.Date(flatpoint_jday, origin = '2019-12-31')
 lagdiff <- flatpoint_jday - orderjday
 ```
 
-# Plot
-```{r, fig.width=6, fig.height=4, fig.align = "center"}
+### Plot 4
+```{r, fig.width=6, fig.height=4, fig.align = "center", eval=FALSE}
 # plot
 df <- state_tb_fit %>% as.data.frame()
 if (length(my.lines_date) == 1) {
@@ -288,17 +289,18 @@ p4 <- ggplot(df, aes(x=date, y=cases_log)) + geom_point() +
 p4
 ```
 
-Together
-```{r, fig.width=6, fig.height=4, fig.align = "center"}
+## All Plots
+```{r, fig.width=6, fig.height=4, fig.align = "center", eval=FALSE}
 grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2)
 ```
 
-- County level
+# County level
+This replicates the same methodology as above but at the county-level
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
 # vector of state acronyms to loop
 countyname <- county_join %>% distinct(admin1, admin2)
 
-# temp before I figure out looping
+# temp
 countyname <- countyname %>% slice(1)
 countyname
 
@@ -442,12 +444,6 @@ p4
 
 grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2)
 ```
-
-# elbow point
-```{r, warning=FALSE, message=FALSE}
-# elbowPoint(jdates, k)
-```
-
 
 
 
