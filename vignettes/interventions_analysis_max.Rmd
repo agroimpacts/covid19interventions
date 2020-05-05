@@ -1,8 +1,8 @@
 ---
-title: "COVID-19 Interventions Analysis"
+title: "COVID-19 Interventions Analysis Max"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{interventions_analysis}
+  %\VignetteIndexEntry{COVID-19 Interventions Analysis Max}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
