@@ -138,9 +138,12 @@ Overview of our database
 [insert example2.png here]
 
 ## Future Work
-```{r}
-
-```
+- Investigate impact of different intervention measures
+- Relate political party to date of SAH intervention
+- Consider additional variables, such as rurality
+- Quantitative analysis on lag dates
+- Pair lag data with mobility data (Google + Unacast Scoreboard)
+- Interesting opportunities for analysis as intervention measures are uplifted
 
 
 
