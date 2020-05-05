@@ -64,7 +64,6 @@ head(us_cases_daily$county)
 head(sah)
 ```
 
----
 
 ## Load packages
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
