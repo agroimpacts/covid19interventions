@@ -398,8 +398,7 @@ vline2 <- data.frame(date = my.lines_date,
 ## plot
 p3 <- ggplot(t_join, aes(x=date, y=k)) + geom_point() +
   geom_line(aes(x=date, y=klinear)) +
-  geom_vline(aes(xintercept=date, colour=label), data=vline1,
-             linetype="dashed", size=1) +
+  geom_vline(aes(xintercept=date, colour=label), data=vline1, size=1) +
   geom_vline(aes(xintercept=date, colour=label), data=vline2, size=1) +
   scale_x_date(date_breaks = "2 day", labels=date_format("%b-%d")) +
   scale_colour_manual(name = "Dates", values = c("breakpoints" = "grey",
@@ -415,14 +414,9 @@ p3
 
 # plot 4
 df <- county_tb_fit %>% as.data.frame()
-if (length(my.lines_date) == 1) {
-  df_vline <- data.frame(dates = c(my.lines_date, flatpoint_date, orderdate),
-                       labels = c("breakpoints", "flatten", "SAH"))
-} else {
-  df_vline <- data.frame(dates = c(my.lines_date[1:length(my.lines_date)-1],
-                                   flatpoint_date, orderdate),
-                         labels = c("breakpoints", "flatten", "SAH"))
-  }
+
+df_vline <- data.frame(dates = c(flatpoint_date, orderdate),
+                       labels = c("flatten", "SAH"))
 
 p4 <- ggplot(county_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
   geom_line(aes(x=date, y=cases_logfit)) +
