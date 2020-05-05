@@ -30,9 +30,12 @@ data(df_joined)
 ```
 
 ## Overview
+- COVID-19 is an infectious and easily communicable virus
 - The U.S. confirmed its first case of COVID-19 on _Jan. 21, 2020_
 - On _Feb. 26, 2020_, the first suspected case of a community spread in the U.S. reported
+- Population density is one of the biggest in a pandemic
 - Local government bodies were first to enforce stay-at-home orders to prevent the spread of COVID-19 before statewide measures implemented
+
 
 ## Goal
 - Identify counties that enforced stay-at-home measures before their state to address the COVID-19 pandemic 
@@ -110,71 +113,66 @@ output$county_selector <- renderUI({
 ```
 
 
-## Interventions & COVID-19 Cases Curve
-- Database Creation: Collecting County & State SAH Intervention Data for U.S
-- Data Table
-```{r}
-datatable(county_interventions)
-```
+## Final Interventions Database
 
-## Before & During Interventions
 ```{r}
-county_interventions_cases_sl <- county_intervention_cases %>% select(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after) %>% distinct(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after)
+county_interventions_cases_sl <- county_intervention_cases %>% 
+  select(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after) %>% 
+  distinct(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after)
 
 #as.data.frame(county_interventions_cases_sl)                      
 datatable(county_interventions_cases_sl)
 ```
 
-
 ## Before Interventions
+<center>
 ![Before](output/state_before_plot.PNG)
+</center>
 
 ## During Interventions
+<center>
 ![During](output/state_during_plot.PNG)
+</center>
 
 ## 1 Week After Interventions
+<center>
 ![After](output/state_1w_after.png)
+</center>
 
 ## 2 Weeks After Interventions
+<center>
 ![After](output/state_2w_after.png)
+</center>
+
 
 ## 4 Weeks After Interventions
+<center>
 ![After](output/state_4w_after.png)
+</center>
 
-## Rationale- NOAH 
-- Why we collected the attributes we did?
-- Variety of variables that could have influenced a later SAH order
 
--Covid-19 is a dynamic and easily spreadable virus. 
+## Rationale 
 - Policy for COVID-19 has been decided on by governors in particular
 - Expressing a Governor's political party will build overall trends in decision making for the US as a whole 
-- The population is one of the largest factors in a factor in a pandemic.
-      For example, New and NJ lead in terms of cases and are large population centers.(worldometers.info/coronavirus)
--Cases are the backbone for understanding the spread of disease. 
--Intervention types across the US were very different from Stay at home minors, to shelter in place
-  - Interventions also occurred across both March of 2020 and April 2020
+- Intervention types across the US were very different from Stay at home minors, to shelter in place
+- Interventions also occurred across both March of 2020 and April 2020
   
-## Pop vs Intervention Date- NOAH
+## Population vs Intervention Date
+- This chart shows the intervention date with the total population of the state. N/A for the party is for territory without a governor
+- There is a clear difference in the political party's by the state for the state's intervention date
+- Democrats tend to be earlier by the republicans were later in March and early April.
+<center>
+![](output/000036.png)
+</center>
 
+## Political Party vs State Intervention Date
+- Overall it shows the bipartisan policy between states for a stay at home order
+- The chart shows the clear dominance geographically of the stay at home order
+- Note this table leaves off 9 states that have no SAH order (of any type)
+<center>
+![Intervention type by political party](output/0000b4.png)
+</center>
 
-
-
--This chart shows the intervention date with the total population of the state. N/A for the party is for territory without a governor.  
-There is a clear difference in the political party's by the state for the state's intervention date. Democrats tend to be earlier by the republicans were later in March and early April.
-
--This chart was created using ggplot
-## Political Party vs State Intervention Date- NOAH
-
-
-
-
--This chart shows the intervention type (policy type) with a political party. 
--Overall it shows the bipartisan policy between states for a stay at home order. It is also interesting to see a lack of shelter in place order between the states. 
--The chart shows the clear dominance geographically of the stay at home order.
-
--Note this table leaves off 9 states that have no SAH order (of any type)
-
--This chart was created using ggplot
 ## Flattening the Curve
 
 ## Future Work

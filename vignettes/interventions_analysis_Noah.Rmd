@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, eval=FALSE}
 library(covid19interventions)
 library(rvest)
 library(dplyr)
@@ -28,7 +28,7 @@ library(covid19clark)
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 # data load
 # covid interventions by county
 data("county_interventions")
@@ -36,7 +36,7 @@ data("county_interventions")
 data("us_cases_daily")
 ```
 
-```{r}
+```{r, eval=FALSE}
 # interventions
 head(county_interventions)
 # covid cases by county
@@ -57,15 +57,8 @@ print (df1)
 
 ```
 
-```{r}
 
-```
-
-
-
-
-
-```{r}
+```{r, eval=FALSE}
 
 library(ggplot2)
 library(tidyverse)
@@ -79,7 +72,7 @@ g
 ```
 
 
-```{r, warning=FALSE, include=TRUE, message=FALSE, results=FALSE}
+```{r, warning=FALSE, include=TRUE, message=FALSE, results=FALSE, eval=FALSE}
 library(ggplot2)
 library(tidyverse)
 df3 <- df1 %>%
