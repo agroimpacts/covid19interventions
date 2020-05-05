@@ -1,7 +1,7 @@
 ---
 title: "COVID-19 U.S. Interventions"
 author: "Priyanka Verma, Priscilla Ahn, Maxwell Enger, Noah Berkowitz"
-date: "5/2/2020"
+date: "5/4/2020"
 output: 
   ioslides_presentation: 
     highlight: null
