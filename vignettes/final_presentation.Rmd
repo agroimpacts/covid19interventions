@@ -111,7 +111,6 @@ output$county_selector <- renderUI({
 
 
 ## Interventions & COVID-19 Cases Curve
-<<<<<<< HEAD
 - Database Creation: Collecting County & State SAH Intervention Data for U.S
 - Data Table
 ```{r}
