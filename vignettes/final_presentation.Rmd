@@ -10,6 +10,7 @@ output:
     widescreen: yes
 runtime: shiny
 ---
+![](output/covid.jpg)
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -21,6 +22,7 @@ library(tidyverse)
 library(changepoint)
 library(shinythemes)
 library(DT)
+library(knitr)
 
 data(mobility)
 data(county_intervention_cases)
@@ -39,7 +41,7 @@ data(df_joined)
 
 ## Goal
 - Identify counties that enforced stay-at-home measures before their state to address the COVID-19 pandemic 
-- Understand if the county-level intervention to minimize direct human contact affects the curve
+- Understand if the county and state level intervention to minimize direct human contact affects the curve
 
 ## Methodology
 - Initially collected data for all types of county-level interventions
@@ -113,8 +115,13 @@ output$county_selector <- renderUI({
 ```
 
 
-## Final Interventions Database
 
+## Final Interventions Database
+```{r, fig.align='center'}
+knitr::include_graphics("output/database.PNG")
+```
+
+## Interventions
 ```{r}
 county_interventions_cases_sl <- county_intervention_cases %>% 
   select(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after) %>% 
@@ -125,31 +132,29 @@ datatable(county_interventions_cases_sl)
 ```
 
 ## Before Interventions
-<center>
-![Before](output/state_before_plot.PNG)
-</center>
+```{r, fig.align='center', out.width = "600px"}
+knitr::include_graphics("output/state_before_plot.PNG")
+```
 
 ## During Interventions
-<center>
-![During](output/state_during_plot.PNG)
-</center>
+```{r, fig.align='center', out.width = "600px"}
+knitr::include_graphics("output/state_during_plot.PNG")
+```
 
 ## 1 Week After Interventions
-<center>
-![After](output/state_1w_after.png)
-</center>
+```{r, fig.align='center', out.width = "600px"}
+knitr::include_graphics("output/state_1w_after.PNG")
+```
 
 ## 2 Weeks After Interventions
-<center>
-![After](output/state_2w_after.png)
-</center>
-
+```{r, fig.align='center', out.width = "600px"}
+knitr::include_graphics("output/state_2w_after.PNG")
+```
 
 ## 4 Weeks After Interventions
-<center>
-![After](output/state_4w_after.png)
-</center>
-
+```{r, fig.align='center', out.width = "600px"}
+knitr::include_graphics("output/state_4w_after.PNG")
+```
 
 ## Rationale 
 - Policy for COVID-19 has been decided on by governors in particular
@@ -161,17 +166,22 @@ datatable(county_interventions_cases_sl)
 - This chart shows the intervention date with the total population of the state. N/A for the party is for territory without a governor
 - There is a clear difference in the political party's by the state for the state's intervention date
 - Democrats tend to be earlier by the republicans were later in March and early April.
-<center>
-![](output/000036.png)
-</center>
+
+
+```{r, out.width = "600px", fig.align='center'}
+knitr::include_graphics("output/000036.png")
+```
 
 ## Political Party vs State Intervention Date
 - Overall it shows the bipartisan policy between states for a stay at home order
 - The chart shows the clear dominance geographically of the stay at home order
 - Note this table leaves off 9 states that have no SAH order (of any type)
-<center>
-![Intervention type by political party](output/0000b4.png)
-</center>
+
+
+```{r, out.width = "600px", fig.align='center'}
+knitr::include_graphics("output/0000b4.png")
+```
+
 
 ## Flattening the Curve
 - Did SAH interventions impact the curve?
@@ -187,12 +197,26 @@ datatable(county_interventions_cases_sl)
   5. Calculate the "lag" between the SAH order date and the last breakpoint
 
 ## Florida State
-[insert example1.png here]
+
+```{r, out.width = "700px", fig.align='center'}
+knitr::include_graphics("output/example1.png")
+```
 
 ## Orange County, Florida
-[insert example2.png here]
+
+```{r, out.width = "700px", fig.align='center'}
+knitr::include_graphics("output/example2.png")
+```
 
 ## Future Work
+- Investigate impact of different intervention measures
+- Relate political party to date of SAH intervention
+- Consider additional variables, such as rurality
+- Quantitative analysis on lag dates
+- Pair lag data with mobility data (Google + Unacast Scoreboard)
+- Interesting opportunities for analysis as intervention measures are uplifted
 
-
-
+## Thank you
+- University of Arizona
+- Lyndon
+- Lei
