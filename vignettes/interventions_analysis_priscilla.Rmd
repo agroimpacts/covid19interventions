@@ -64,7 +64,6 @@ head(us_cases_daily$county)
 head(sah)
 ```
 
----
 
 ## Load packages
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
@@ -238,8 +237,7 @@ vline2 <- data.frame(date = my.lines_date,
 # plot
 p3 <- ggplot(t_join, aes(x=date, y=k)) + geom_point() +
   geom_line(aes(x=date, y=klinear)) +
-  geom_vline(aes(xintercept=date, colour=label), data=vline1,
-             linetype="dashed", size=1) +
+  geom_vline(aes(xintercept=date, colour=label), data=vline1, size=1) +
   geom_vline(aes(xintercept=date, colour=label), data=vline2, size=1) +
   scale_x_date(date_breaks = "2 day", labels=date_format("%b-%d")) +
   scale_colour_manual(name = "Dates", values = c("breakpoints" = "grey",
@@ -420,6 +418,7 @@ df_vline <- data.frame(dates = c(flatpoint_date, orderdate),
 
 p4 <- ggplot(county_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
   geom_line(aes(x=date, y=cases_logfit)) +
+  geom_vline(aes(xintercept=date, colour=label), data=vline2, size=1) +
   geom_vline(aes(xintercept = dates, colour = labels), data = df_vline,
              linetype = 1, size = 1, show.legend = T) +
   scale_colour_manual(name = "Dates", values = c("breakpoints" = "grey",
