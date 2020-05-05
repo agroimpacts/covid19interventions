@@ -138,10 +138,10 @@ Overview of our database
 [insert example2.png here]
 
 ## Future Work
-- Investigate impact of different intervention measures
-- Consider additional variables, such as rurality
 - Quantitative analysis on lag dates
 - Pair lag data with mobility data (Google + Unacast Scoreboard)
+- Investigate impact of different intervention measures
+- Consider additional variables, such as rurality
 - Interesting opportunities for analysis as intervention measures are uplifted
 - e.g. Relate political party to date when orders are relaxed or lifted
 
