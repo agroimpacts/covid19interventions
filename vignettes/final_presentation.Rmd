@@ -22,13 +22,11 @@ library(changepoint)
 library(shinythemes)
 library(DT)
 
-<<<<<<< HEAD
 data(mobility)
 data(county_intervention_cases)
-=======
+
 data(county_interventions)
 data(df_joined)
->>>>>>> master
 ```
 
 ## Overview
@@ -117,19 +115,15 @@ output$county_selector <- renderUI({
 - Database Creation: Collecting County & State SAH Intervention Data for U.S
 - Data Table
 ```{r}
-=======
-```{r}
 datatable(county_interventions)
 ```
 
 ## Before & During Interventions
->>>>>>> master
-
+```{r}
 county_interventions_cases_sl <- county_intervention_cases %>% select(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after) %>% distinct(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after)
 
 #as.data.frame(county_interventions_cases_sl)                      
 datatable(county_interventions_cases_sl)
-
 ```
 
 

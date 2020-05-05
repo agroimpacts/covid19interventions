@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, eval = FALSE}
 <<<<<<< HEAD
 
 library(devtools)
@@ -23,7 +23,6 @@ library(covid19interventions)
 
 # run if you don't have covid19clark
 devtools::install_github("agroimpacts/covid19clark")
-=======
 library(devtools)
 library(usethis)
 >>>>>>> master
@@ -41,7 +40,7 @@ library(covid19clark)
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 # data load
 # covid interventions by county
 data("county_interventions")
@@ -49,16 +48,15 @@ data("county_interventions")
 data("us_cases_daily")
 ```
 
-```{r}
+```{r, eval = FALSE}
 # interventions
 head(county_interventions)
 # covid cases by county
 head(us_cases_daily$county)
 ```
 
-<<<<<<< HEAD
 
-```{r}
+```{r, eval = FALSE}
 #------------------------------------------------------------------------------------------------------------
 # How many cases and deaths were recorded the date the intervention measures were put in place?
 library(dplyr)
@@ -215,7 +213,6 @@ p
 ```
 
 
-=======
 ```{r}
 #How many cases and deaths were recorded the date the intervention measures were put in place?
 
@@ -231,7 +228,3 @@ p
 #3.After plotting those two lines find the places that showed the highest and lowest drops due to the intervention or lack thereof.
 
 ```
-
-
-
->>>>>>> master
