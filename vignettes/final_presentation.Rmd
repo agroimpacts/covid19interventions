@@ -20,34 +20,44 @@ library(ggplot2)
 library(tidyverse)
 library(changepoint)
 library(shinythemes)
+library(DT)
 
+<<<<<<< HEAD
 data(mobility)
 data(county_intervention_cases)
+=======
+data(county_interventions)
+data(df_joined)
+>>>>>>> master
 ```
 
 ## Overview
-- The United States confirmed its first case of COVID-19 on _Jan. 21, 2020_
-- On _Feb. 26, 2020_, the first suspected case of a community spread in the U.S. was reported
-- Local government bodies were first to enforce stay-at-home   to prevent the spread of COVID-19 before statewide measures were implemented
+- The U.S. confirmed its first case of COVID-19 on _Jan. 21, 2020_
+- On _Feb. 26, 2020_, the first suspected case of a community spread in the U.S. reported
+- Local government bodies were first to enforce stay-at-home orders to prevent the spread of COVID-19 before statewide measures implemented
 
 ## Goal
 - Identify counties that enforced stay-at-home measures before their state to address the COVID-19 pandemic 
 - Understand if the county-level intervention to minimize direct human contact affects the curve
 
 ## Methodology
-- We started by collecting data for the two most and least populated counties in every state- Slow process
-- Google's Mobility dataset utilized to expedite the collection process
+- Initially collected data for all types of county-level interventions
+- Focused on the two least and most populated counties in every state
+- The process was slow- most counties did not have any interventions in place
+- In the interest of time, limited interventions to stay-at-home orders only
+- Google's Mobility dataset utilized to expedite the collection process by observing the change in movement at the county level
 
 ## Change in Mobility
 - Movement information released by Google to support data-driven decision making in managing COVID-19
 - Collected through Google products such as Google Maps
-- Utilized to identify counties with the highest drop in workplace visits before statewide order implemented
+- Data reports percent change in movement across places in comparison to the median trend seen between _Jan. 3, 2020_ and _Feb. 5, 2020_
+- Used to identify counties with the highest drop in workplace visits, potentially as a result of a county-level stay-at-home order
 
-## Change-Point Analysis
-- Change-point detection technique used to determine change in workplace mobility curve before statewide stay-at-home order implemented for every county
-- Specifically, At-Most-One-Change (AMOC) method used to determine a single point of where significant change is seen
-- Mean of workplace mobility calculated pre and post change point
-- Counties ranked based on mean change in workplace mobility post changepoint
+## Changepoint Analysis
+- Changepoint detection technique used to determine the change in workplace mobility curve before a statewide stay-at-home was order implemented
+- Specifically, At-Most-One-Change (AMOC) method used to identify a single point of significant change 
+- Mean of workplace mobility calculated pre and post changepoint for every county
+- Counties with the lowest mean for workplace visits post changepoint prioritized in the data collection process
 
 ## Change in Mobility by County
 ```{r, echo = FALSE}
@@ -103,9 +113,17 @@ output$county_selector <- renderUI({
 
 
 ## Interventions & COVID-19 Cases Curve
+<<<<<<< HEAD
 - Database Creation: Collecting County & State SAH Intervention Data for U.S
 - Data Table
 ```{r}
+=======
+```{r}
+datatable(county_interventions)
+```
+
+## Before & During Interventions
+>>>>>>> master
 
 county_interventions_cases_sl <- county_intervention_cases %>% select(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after) %>% distinct(admin1, SAH_State_Date,cases, cases_2day_before, cases_week_after, cases_2week_after, cases_4week_after)
 
@@ -130,7 +148,6 @@ datatable(county_interventions_cases_sl)
 ## 4 Weeks After Interventions
 ![After](output/state_4w_after.png)
 
-
 ## Rationale- NOAH 
 - Why we collected the attributes we did?
 - Variety of variables that could have influenced a later SAH order
@@ -142,9 +159,6 @@ datatable(county_interventions_cases_sl)
 ## Flattening the Curve
 
 ## Future Work
-```{r}
-
-```
 
 
 
