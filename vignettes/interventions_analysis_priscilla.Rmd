@@ -432,7 +432,7 @@ p4 <- ggplot(county_tb_fit, aes(x=date, y=cases_log)) + geom_point() +
                                                  "flatten" = "#E88147",
                                                  "SAH" = "#57B1C5")) +
   scale_x_date(date_breaks = "2 day", labels=date_format("%b-%d")) +
-  labs(title = "Did SAH order flatten the curve?",
+  labs(title = "Impact of SAH Order on Curve",
        subtitle = paste0(firstup(countyname[[2]]), ", ",
                          firstup(countyname[[1]])),
        caption = paste0("Lag = ", lagdiff, " days"),
