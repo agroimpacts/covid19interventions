@@ -1,6 +1,6 @@
 Package: covid19interventions
 Title: Package for a COVID-19 related spatial interventions database for the U.S.
-Version: 0.1
+Version: 1.0
 Authors@R: 
     c(person(given = "Priyanka",
              family = "Verma",
