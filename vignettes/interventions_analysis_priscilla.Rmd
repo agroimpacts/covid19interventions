@@ -6,7 +6,7 @@ output:
     toc_depth: 3
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{interventions_analysis_priscilla}
+  %\VignetteIndexEntry{COVID-19 Interventions Analysis - Priscilla Ahn}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
